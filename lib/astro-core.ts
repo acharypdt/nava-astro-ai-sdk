@@ -21,6 +21,7 @@ export interface CalculationParams {
   minute: number;
   lat: number;
   lng: number;
+  timezone?: number;
   ayanamsa: string;
   gender?: string;
   birthLocation?: string;
@@ -30,10 +31,12 @@ export interface CalculationParams {
  * Calculates Ayanamsa offset (Lahiri approximation)
  */
 function getAyanamsaOffset(year: number): number {
-  // Lahiri Ayanamsa is ~23.85 degrees in 1950, increases ~50.3" arc per year.
-  const referenceYear = 1950;
-  const referenceValue = 23.85;
-  const annualPrecession = 50.3 / 3600; // Degrees per year
+  // Balanced Lahiri Ayanamsa (Chitra Paksha)
+  // Epoch 2000.0: 23.853056 degrees
+  // Rate: ~50.2908 seconds per year
+  const referenceYear = 2000;
+  const referenceValue = 23.853056;
+  const annualPrecession = 50.2908 / 3600; 
   return referenceValue + (year - referenceYear) * annualPrecession;
 }
 
@@ -107,16 +110,20 @@ function calculatePlanetaryPositions(date: Date, ayanamsa: number, lat: number, 
     is_retrograde: true
   };
 
-  // Calculate Ascendant (Lagna) - Using Local Sidereal Time
+  // Calculate Ascendant (Lagna) - Using Local Sidereal Time and Latitude
   const gst = SiderealTime(date); // Greenwish Sidereal Time
   const lst = (gst + lng / 15) % 24; 
   const ramc = lst * 15; 
 
-  const ecl = 23.439; 
-  const sinL = Math.sin(ramc * Math.PI / 180) * Math.cos(ecl * Math.PI / 180);
-  const cosL = Math.cos(ramc * Math.PI / 180);
-  let lagnaTropical = Math.atan2(sinL, cosL) * 180 / Math.PI;
-  if (lagnaTropical < 0) lagnaTropical += 360;
+  const eps = 23.43929 * Math.PI / 180; // Obliquity of the ecliptic
+  const phi = lat * Math.PI / 180;     // Geographic Latitude
+  const ra = ramc * Math.PI / 180;     // Right Ascension of the Meridian
+
+  // Correct Ascendant formula: atan2(cos(ra), -(sin(ra)*cos(eps) + tan(phi)*sin(eps)))
+  let lagnaTropical = Math.atan2(Math.cos(ra), -(Math.sin(ra) * Math.cos(eps) + Math.tan(phi) * Math.sin(eps))) * 180 / Math.PI;
+  
+  // Normalized to 0-360
+  lagnaTropical = (lagnaTropical + 360) % 360;
 
   let lagnaSidereal = (lagnaTropical - ayanamsa) % 360;
   if (lagnaSidereal < 0) lagnaSidereal += 360;
@@ -170,11 +177,24 @@ function calculateCurrentDasha(moonLongitude: number, birthDateObj: Date): { cur
 }
 
 export async function calculateChart(params: CalculationParams): Promise<AstroChartData> {
-  const birthDate = new Date(Date.UTC(params.year, params.month - 1, params.day, params.hour, params.minute));
+  // Convert local birth time to UTC for calculation
+  const timezoneOffset = params.timezone !== undefined ? params.timezone : 5.5;
+  const localTimeMs = Date.UTC(params.year, params.month - 1, params.day, params.hour, params.minute);
+  const birthDate = new Date(localTimeMs - timezoneOffset * 3600000);
+  
   const ayanamsa = getAyanamsaOffset(params.year);
 
   // 1. D1 Chart (Natal)
   const { planets, finalLagnaSign, lagnaSidereal } = calculatePlanetaryPositions(birthDate, ayanamsa, params.lat, params.lng);
+
+  // Add Ascendant to planets object for UI display
+  planets['Ascendant'] = {
+    name: 'Ascendant',
+    longitude: lagnaSidereal,
+    sign: finalLagnaSign,
+    house: 1,
+    is_retrograde: false
+  };
 
   // 2. D9 Chart (Navamsha)
   const d9Planets: any = {};

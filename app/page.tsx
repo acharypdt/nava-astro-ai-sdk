@@ -38,6 +38,7 @@ export default function AstroDashboard() {
     minute: 20,
     lat: 23.91,
     lng: 76.91,
+    timezone: 5.5,
     report_type: "सामान्य"
   });
 
@@ -57,6 +58,7 @@ export default function AstroDashboard() {
         minute: formData.minute,
         lat: formData.lat,
         lng: formData.lng,
+        timezone: formData.timezone,
         report_type: formData.report_type,
         gender: formData.gender,
         birthLocation: formData.location,
@@ -235,6 +237,17 @@ export default function AstroDashboard() {
               </div>
 
               <div className="space-y-1">
+                <label className="text-[10px] uppercase tracking-wider opacity-50 block">टाइमज़ोन और ऑफसेट (Timezone Offset, e.g. +5.5)</label>
+                <input type="number" step="0.1"
+                  value={formData.timezone}
+                  onChange={e => setFormData({...formData, timezone: parseFloat(e.target.value)})}
+                  placeholder="e.g. 5.5 for India"
+                  className="w-full bg-black/40 border border-white/10 rounded-lg py-3 px-4 focus:ring-1 focus:ring-[#F27D26] outline-none"
+                  suppressHydrationWarning
+                />
+              </div>
+
+              <div className="space-y-1">
                 <label className="text-[10px] uppercase tracking-wider opacity-50 block">विश्लेषण का विषय</label>
                 <select 
                   value={formData.report_type}
@@ -287,13 +300,20 @@ export default function AstroDashboard() {
                       <h3 className="text-sm font-mono tracking-widest uppercase">जन्म कुण्डली (D1) व ग्रहों की स्थिति</h3>
                     </div>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      {Object.values(report.math.planets).map((p: any) => (
-                        <div key={p.name} className="bg-white/5 p-4 rounded-xl border border-white/5 hover:border-[#F27D26]/30 transition-colors cursor-default">
-                          <p className="text-[10px] uppercase opacity-40 mb-1">{p.name}</p>
-                          <p className="text-lg font-mono tracking-tight">{p.longitude.toFixed(2)}&deg;</p>
-                          <p className="text-[10px] opacity-60">भाव (House) {p.house} / राशि {p.sign}</p>
-                        </div>
-                      ))}
+                      {Object.values(report.math.planets).map((p: any) => {
+                        const hindiMap: any = {
+                          'Sun': 'सूर्य', 'Moon': 'चंद्रमा', 'Mars': 'मंगल', 'Mercury': 'बुध',
+                          'Jupiter': 'गुरु', 'Venus': 'शुक्र', 'Saturn': 'शनि',
+                          'Rahu': 'राहु', 'Ketu': 'केतु', 'Ascendant': 'लग्न'
+                        };
+                        return (
+                          <div key={p.name} className="bg-white/5 p-4 rounded-xl border border-white/5 hover:border-[#F27D26]/30 transition-colors cursor-default">
+                            <p className="text-[10px] uppercase opacity-40 mb-1">{hindiMap[p.name] || p.name}</p>
+                            <p className="text-lg font-mono tracking-tight">{p.longitude.toFixed(2)}&deg;</p>
+                            <p className="text-[10px] opacity-60">भाव (House) {p.house} / राशि {p.sign}</p>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
 
@@ -306,12 +326,19 @@ export default function AstroDashboard() {
                            <h3 className="text-xs font-mono tracking-widest uppercase">नवमांश (D9)</h3>
                          </div>
                          <div className="grid grid-cols-2 gap-2">
-                           {Object.values(report.math.d9Planets).slice(0, 4).map((p: any) => (
-                             <div key={p.name} className="bg-white/5 p-2 rounded border border-white/5">
-                               <p className="text-[10px] opacity-50">{p.name}</p>
-                               <p className="text-sm font-mono">राशि {p.sign}</p>
-                             </div>
-                           ))}
+                           {Object.values(report.math.d9Planets).slice(0, 4).map((p: any) => {
+                             const hindiMap: any = {
+                               'Sun': 'सूर्य', 'Moon': 'चंद्रमा', 'Mars': 'मंगल', 'Mercury': 'बुध',
+                               'Jupiter': 'गुरु', 'Venus': 'शुक्र', 'Saturn': 'शनि',
+                               'Rahu': 'राहु', 'Ketu': 'केतु', 'Ascendant': 'लग्न'
+                             };
+                             return (
+                               <div key={p.name} className="bg-white/5 p-2 rounded border border-white/5">
+                                 <p className="text-[10px] opacity-50">{hindiMap[p.name] || p.name}</p>
+                                 <p className="text-sm font-mono">राशि {p.sign}</p>
+                               </div>
+                             );
+                           })}
                          </div>
                       </div>
                     )}

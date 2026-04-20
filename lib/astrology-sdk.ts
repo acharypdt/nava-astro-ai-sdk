@@ -173,11 +173,21 @@ export class NavaAstroSDK {
     const location = params.birthLocation || 'Not Specified';
 
     const yogaCount = activeRules.length;
+    const hindiSigns = ["", "मेष", "वृषभ", "मिथुन", "कर्क", "सिंह", "कन्या", "तुला", "वृश्चिक", "धनु", "मकर", "कुंभ", "मीन"];
+    
     let report = `### 📜 कुण्डली धारक का विवरण\n`;
     report += `- **लिंग:** ${gender === 'Male' ? 'पुरुष' : gender === 'Female' ? 'स्त्री' : 'अन्य'}\n`;
     report += `- **जन्म स्थान:** ${location}\n`;
-    report += `- **विश्लेषण का विषय:** ${category}\n\n`;
+    const tz = params.timezone !== undefined ? params.timezone : 5.5;
+    report += `- **टाइमज़ोन (Offset):** ${tz >= 0 ? '+' : ''}${tz}\n`;
+    report += `- **विश्लेषण का विषय:** ${category}\n`;
     
+    const lagna = data.planets['Ascendant'];
+    if (lagna) {
+      report += `- **लग्न (Ascendant):** ${hindiSigns[lagna.sign]} (${lagna.longitude.toFixed(2)}°)\n`;
+    }
+    report += `\n`;
+
     report += `आपकी ${category} कुण्डली (D1), नवमांश (D9), वर्तमान महादशा और गोचर के पूर्ण ज्योतिषीय विश्लेषण के आधार पर विस्तृत रिपोर्ट: \n\n`;
 
     const houseMeanings: { [key: number]: string } = {
@@ -195,8 +205,6 @@ export class NavaAstroSDK {
       12: "व्यय, एकांत, मोक्ष और विदेश यात्रा"
     };
 
-    const hindiSigns = ["", "मेष", "वृषभ", "मिथुन", "कर्क", "सिंह", "कन्या", "तुला", "वृश्चिक", "धनु", "मकर", "कुंभ", "मीन"];
-    
     // Comprehensive Planet Analysis
     report += `### 🌌 जन्म कुण्डली (D1) ग्रहीय विश्लेषण\n\n`;
     
@@ -381,7 +389,6 @@ export class NavaAstroSDK {
       report += `### 🔄 वर्तमान गोचर (Transits) प्रभाव\n`;
       const transitSaturn = data.transits['Saturn'];
       const moonSign = moon.sign;
-      const hindiSigns = ["", "मेष", "वृषभ", "मिथुन", "कर्क", "सिंह", "कन्या", "तुला", "वृश्चिक", "धनु", "मकर", "कुंभ", "मीन"];
       
       const dist = (transitSaturn.sign - moonSign + 12) % 12;
       report += `इस समय आकाश में शनि **${hindiSigns[transitSaturn.sign]}** राशि में गोचर कर रहा है। `

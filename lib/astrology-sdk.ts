@@ -135,6 +135,18 @@ export class NavaAstroSDK {
           { operator: 'OPPOSITION', params: { planets: ['Rahu', 'Ketu'] } }
         ],
         category: "कर्म और मोक्ष"
+      },
+      {
+        name: "Mutual Aspect between Venus and Mars",
+        operator: 'OR',
+        operands: [
+          { operator: 'CONJUNCT', params: { planets: ['Venus', 'Mars'] } },
+          { operator: 'TRINE', params: { planets: ['Venus', 'Mars'] } },
+          { operator: 'SEXTILE', params: { planets: ['Venus', 'Mars'] } },
+          { operator: 'OPPOSITION', params: { planets: ['Venus', 'Mars'] } },
+          { operator: 'SQUARE', params: { planets: ['Venus', 'Mars'] } }
+        ],
+        category: "Relationship Harmony"
       }
     ];
 
@@ -274,6 +286,27 @@ export class NavaAstroSDK {
                 const rahuSign = hindiSigns[rahu.sign] || "";
                 const ketuSign = hindiSigns[ketu.sign] || "";
                 report += `🌀 **राहु-केतु कर्म अक्ष (${rahu.house}/${ketu.house} भाव)**: कुण्डली में राहु ${rahu.house}वें भाव (${rahuSign} राशि) में विराजमान है, जो इस क्षेत्र में अत्यंत गहरी महत्वाकांक्षा, भौतिक विस्तार और अप्रत्याशित जुनून पैदा करता है। इसके ठीक 180° विपरीत केतु ${ketu.house}वें भाव (${ketuSign} राशि) में है, जो पूर्व जन्मों की पूर्णता, कर्म त्याग (वैराग्य) और रहस्यमय अंतर्ज्ञान (Mystic intuition) को दर्शाता है। यह "${rahu.house}-${ketu.house}" भावों का ध्रुवीकरण आपके जीवन के सबसे बड़े मानसिक द्वंद्व और आध्यात्मिक उन्नति (Spiritual Evolution) के मार्ग को गहराई से परिभाषित करता है।\n\n`;
+            }
+            break;
+          }
+          case 'Mutual Aspect between Venus and Mars': {
+            const venus = data.planets['Venus'];
+            const mars = data.planets['Mars'];
+            if (venus && mars) {
+                const hindiSigns = ["", "मेष", "वृषभ", "मिथुन", "कर्क", "सिंह", "कन्या", "तुला", "वृश्चिक", "धनु", "मकर", "कुंभ", "मीन"];
+                const venusSign = hindiSigns[venus.sign] || "";
+                const marsSign = hindiSigns[mars.sign] || "";
+                const dist = (mars.sign - venus.sign + 12) % 12 + 1;
+                
+                let aspectName = "";
+                if (dist === 1) aspectName = "युति (एक साथ)";
+                else if (dist === 7) aspectName = "समसप्तक दृष्टि (आमने-सामने)";
+                else if (dist === 5 || dist === 9) aspectName = "त्रिकोण दृष्टि (शुभ)";
+                else if (dist === 4 || dist === 10) aspectName = "केंद्र दृष्टि (संघर्ष और ऊर्जा)";
+                else if (dist === 3 || dist === 11) aspectName = "लाभ/पराक्रम दृष्टि (सहयोगी)";
+                else aspectName = "विशेष संबंध";
+
+                report += `❤️ **शुक्र-मंगल ${aspectName}**: आपकी कुण्डली में शुक्र ${venus.house}वें भाव (${venusSign}) में और मंगल ${mars.house}वें भाव (${marsSign}) में विराजमान हैं। इन दोनों के बीच यह शक्तिशाली **${aspectName}** आपके प्रेम, आकर्षण और भौतिक सुखों में असीम ऊर्जा भर देता है। चूँकि शुक्र आपकी कोमल भावनाओं का और मंगल आपके जुनून (passion) का प्रतिनिधित्व करता है, यह विशेष "शुक्र-मंगल संबंध" आपके रोमांटिक और वैवाहिक जीवन में अत्यधिक तीव्रता (intensity) लाता है।\n\n`;
             }
             break;
           }

@@ -102,6 +102,36 @@ export function evaluateRule(rule: RuleAST, data: AstroChartData): boolean {
       return dist === 7;
     }
 
+    case 'TRINE': {
+      const { planets } = rule.params;
+      if (planets.length < 2) return false;
+      const p1 = data.planets[planets[0]];
+      const p2 = data.planets[planets[1]];
+      if (!p1 || !p2) return false;
+      const dist = (p2.sign - p1.sign + 12) % 12 + 1;
+      return dist === 5 || dist === 9;
+    }
+
+    case 'SQUARE': {
+      const { planets } = rule.params;
+      if (planets.length < 2) return false;
+      const p1 = data.planets[planets[0]];
+      const p2 = data.planets[planets[1]];
+      if (!p1 || !p2) return false;
+      const dist = (p2.sign - p1.sign + 12) % 12 + 1;
+      return dist === 4 || dist === 10;
+    }
+
+    case 'SEXTILE': {
+      const { planets } = rule.params;
+      if (planets.length < 2) return false;
+      const p1 = data.planets[planets[0]];
+      const p2 = data.planets[planets[1]];
+      if (!p1 || !p2) return false;
+      const dist = (p2.sign - p1.sign + 12) % 12 + 1;
+      return dist === 3 || dist === 11;
+    }
+
     case 'VEDIC_ASPECT': {
       const { aspector, aspectee } = rule.params;
       const p1 = data.planets[aspector];

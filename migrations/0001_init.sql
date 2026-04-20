@@ -55,7 +55,8 @@ CREATE TABLE IF NOT EXISTS app_logs (
 INSERT OR IGNORE INTO astrology_rules (id, name, category, condition_ast) VALUES 
 ('rule_1', 'Gaja Kesari Yoga', 'Yoga', '{"operator": "AND", "operands": [{"operator": "IN_HOUSE", "params": {"house": [1, 4, 7, 10], "planet": "Jupiter"}}, {"operator": "ASPECT", "params": {"planets": ["Moon", "Jupiter"]}}]}'),
 ('rule_2', 'Manglik Dosha', 'Dosha', '{"operator": "OR", "operands": [{"operator": "IN_HOUSE", "params": {"house": [1, 2, 4, 7, 8, 12], "planet": "Mars"}}]}'),
-('rule_3', 'Rahu-Ketu Axis', 'Axis', '{"operator": "OR", "operands": [{"operator": "CONJUNCT", "params": {"planets": ["Rahu", "Ketu"]}}, {"operator": "OPPOSITION", "params": {"planets": ["Rahu", "Ketu"]}}]}');
+('rule_3', 'Rahu-Ketu Axis', 'Axis', '{"operator": "OR", "operands": [{"operator": "CONJUNCT", "params": {"planets": ["Rahu", "Ketu"]}}, {"operator": "OPPOSITION", "params": {"planets": ["Rahu", "Ketu"]}}]}'),
+('rule_4', 'Mutual Aspect between Venus and Mars', 'Relationship Harmony', '{"operator": "OR", "operands": [{"operator": "CONJUNCT", "params": {"planets": ["Venus", "Mars"]}}, {"operator": "TRINE", "params": {"planets": ["Venus", "Mars"]}}, {"operator": "SEXTILE", "params": {"planets": ["Venus", "Mars"]}}, {"operator": "OPPOSITION", "params": {"planets": ["Venus", "Mars"]}}, {"operator": "SQUARE", "params": {"planets": ["Venus", "Mars"]}}]}');
 
 -- Pre-fill some prompts
 INSERT OR IGNORE INTO dynamic_prompts (id, category, system_prompt) VALUES 

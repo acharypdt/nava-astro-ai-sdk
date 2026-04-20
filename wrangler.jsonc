@@ -1,0 +1,36 @@
+{
+  "name": "nava-astro-platform",
+  "main": "src/index.ts",
+  "compatibility_date": "2024-04-19",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "assets": {
+    "directory": "./out"
+  },
+  "kv_namespaces": [
+    {
+      "binding": "PLATFORM_SECRETS",
+      "id": "b5d1d07aea674c2ea44be85731701215"
+    }
+  ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "nava_astro_db",
+      "database_id": "b7d7b7d7-b7d7-b7d7-b7d7-b7d7b7d7b7d7"
+    }
+  ],
+  "ai": {
+    "binding": "AI"
+  },
+  "vectorize": [
+    {
+      "binding": "VECTOR_INDEX",
+      "index_name": "astro_classical_texts"
+    }
+  ],
+  "vars": {
+    "ENVIRONMENT": "production"
+  }
+}

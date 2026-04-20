@@ -1,0 +1,6 @@
+{
+  "name": "NavaAstro AI Platform",
+  "description": "Enterprise-grade, 100% dynamic Astrology AI SDK and Platform built on Cloudflare Workers, D1, and R2.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["AI Astrology Engine", "Dynamic Rule Evaluator", "Headless JSON API"]
+}

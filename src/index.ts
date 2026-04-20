@@ -1,0 +1,85 @@
+/**
+ * @file src/index.ts
+ * @description Core Cloudflare Worker for NavaAstro Platform.
+ * Handles API routing, Auth, Physics Engine orchestration, and Static Asset serving.
+ */
+
+import { NavaAstroSDK } from '../lib/astrology-sdk';
+
+export interface Env {
+  DB: D1Database;
+  PLATFORM_SECRETS: KVNamespace;
+  AI: any;
+  VECTOR_INDEX: VectorizeIndex;
+  ENVIRONMENT: string;
+}
+
+/**
+ * Centralized Error Handler
+ */
+async function handleGlobalError(error: any, context: string, env: Env) {
+  console.error(`[${context}] ERROR:`, error);
+  
+  try {
+    // Log to D1 (ensure app_logs table exists)
+    await env.DB.prepare('INSERT INTO app_logs (context, message, stack) VALUES (?, ?, ?)')
+      .bind(context, error?.message || "Unknown error", error?.stack || "")
+      .run();
+  } catch (e) {
+    console.warn("Failed to log error to D1", e);
+  }
+
+  return new Response("Internal Server Error", { status: 500, headers: { 'Content-Type': 'text/plain' } });
+}
+
+const worker = {
+  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+    const url = new URL(request.url);
+    
+    // 1. Route to API
+    if (url.pathname.startsWith('/api/')) {
+      try {
+        return await handleApiRequest(request, env);
+      } catch (error) {
+        return await handleGlobalError(error, `API_ROUTE:${url.pathname}`, env);
+      }
+    }
+
+    return new Response("Not Found", { status: 404 });
+  }
+};
+
+export default worker;
+
+async function handleApiRequest(request: Request, env: Env): Promise<Response> {
+  const url = new URL(request.url);
+
+  // --- SDK Orchestration Endpoint ---
+  if (url.pathname === '/api/astro-engine' && request.method === 'POST') {
+    const body = await request.json() as any;
+    
+    // Initialize the SDK with environment bindings
+    const sdk = new NavaAstroSDK({ env });
+    
+    // Execute Analysis via SDK
+    const analysis = await sdk.analyze({
+      ...body.birth_data,
+      report_type: body.report_type,
+      ayanamsa: body.config?.ayanamsa || 'LAHIRI'
+    });
+
+    return Response.json({
+      success: true,
+      sdk_version: "4.2.0-stable",
+      data: {
+        math: analysis.math,
+        analysis: {
+          activeRules: analysis.activeRules,
+          aiReport: analysis.aiReport
+        }
+      }
+    });
+  }
+
+  return new Response("Not Found", { status: 404 });
+}

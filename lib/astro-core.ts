@@ -128,7 +128,7 @@ function calculatePlanetaryPositions(date: Date, ayanamsa: number, lat: number, 
     planets[pName].house = house;
   });
 
-  return { planets, finalLagnaSign };
+  return { planets, finalLagnaSign, lagnaSidereal };
 }
 
 function calculateCurrentDasha(moonLongitude: number, birthDateObj: Date): { currentLord: string, balanceFraction: number } {
@@ -172,19 +172,25 @@ export async function calculateChart(params: CalculationParams): Promise<AstroCh
   const ayanamsa = getAyanamsaOffset(params.year);
 
   // 1. D1 Chart (Natal)
-  const { planets, finalLagnaSign } = calculatePlanetaryPositions(birthDate, ayanamsa, params.lat, params.lng);
+  const { planets, finalLagnaSign, lagnaSidereal } = calculatePlanetaryPositions(birthDate, ayanamsa, params.lat, params.lng);
 
   // 2. D9 Chart (Navamsha)
   const d9Planets: any = {};
+  
   Object.keys(planets).forEach(k => {
     const p = planets[k];
-    const d9Sign = (Math.floor(p.longitude / (10 / 3)) % 12) + 1;
-    // For D9, we roughly calculate house relative to D9 lagna (but here we'll just track sign)
-    d9Planets[k] = { name: p.name, sign: d9Sign, house: d9Sign }; 
+    // In D9, 1 Navamsha = 3 degrees 20 minutes (10/3 degrees).
+    // The exact continuous mapping is (Longitude * 9) % 360 mapped to the 12 signs.
+    const navamshaAbsoluteLongitude = (p.longitude * 9) % 360;
+    const d9Sign = Math.floor(navamshaAbsoluteLongitude / 30) + 1;
+    d9Planets[k] = { name: p.name, sign: d9Sign, house: d9Sign, longitude: navamshaAbsoluteLongitude, is_retrograde: p.is_retrograde }; 
   });
 
-  // Calculate D9 Lagna
-  const d9LagnaSign = (Math.floor(((finalLagnaSign - 1) * 30) / (10 / 3)) % 12) + 1;
+  // Calculate D9 Lagna precisely using real sidereal degree of Lagna
+  const navamshaLagnaLongitude = (lagnaSidereal * 9) % 360;
+  const d9LagnaSign = Math.floor(navamshaLagnaLongitude / 30) + 1;
+  d9Planets['Ascendant'] = { name: 'Ascendant', sign: d9LagnaSign, house: 1, longitude: navamshaLagnaLongitude, is_retrograde: false };
+
   Object.keys(d9Planets).forEach(k => {
     let house = d9Planets[k].sign - d9LagnaSign + 1;
     if (house < 1) house += 12;

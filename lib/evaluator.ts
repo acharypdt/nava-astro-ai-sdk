@@ -19,6 +19,8 @@ export interface AstroChartData {
       name: string;
       sign: number;
       house: number;
+      longitude?: number;
+      is_retrograde?: boolean;
     };
   };
   transits?: {

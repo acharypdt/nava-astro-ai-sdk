@@ -6,6 +6,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import ReactMarkdown from 'react-markdown';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Sparkles, 
@@ -300,12 +301,12 @@ export default function AstroDashboard() {
                   <div>
                     <div className="flex items-center gap-2 mb-6 border-b border-white/10 pb-4">
                       <Activity className="w-5 h-5 text-[#F27D26]" />
-                      <h3 className="text-sm font-mono tracking-widest uppercase">मूल ज्योतिष रिपोर्ट</h3>
+                      <h3 className="text-sm font-mono tracking-widest uppercase">विस्तृत ज्योतिषीय विश्लेषण (AI Report)</h3>
                     </div>
-                    <div className="prose prose-invert max-w-none">
-                      <p className="text-xl leading-relaxed font-light opacity-90 first-letter:text-4xl first-letter:font-serif first-letter:text-[#F27D26]">
-                        {report.analysis.aiReport}
-                      </p>
+                    <div className="prose prose-invert prose-orange max-w-none prose-p:leading-relaxed prose-headings:font-medium prose-h2:text-[#F27D26] prose-h3:text-orange-300">
+                      <div className="markdown-body">
+                        <ReactMarkdown>{report.analysis.aiReport}</ReactMarkdown>
+                      </div>
                     </div>
                   </div>
 

@@ -177,12 +177,57 @@ export class NavaAstroSDK {
       12: "व्यय, एकांत, मोक्ष और विदेश यात्रा"
     };
 
-    // Base planets
-    const sun = data.planets['Sun'];
-    const moon = data.planets['Moon'];
+    const hindiSigns = ["", "मेष", "वृषभ", "मिथुन", "कर्क", "सिंह", "कन्या", "तुला", "वृश्चिक", "धनु", "मकर", "कुंभ", "मीन"];
     
-    if (sun) report += `**सूर्य का प्रभाव:** सूर्य आपकी कुण्डली के ${sun.house}वें भाव (${houseMeanings[sun.house]}) में स्थित है। अतः आपके जीवन का मूल उद्देश्य, आत्मविश्वास और नेतृत्व क्षमता इसी क्षेत्र से सर्वाधिक संचालित होती है।\n\n`;
-    if (moon) report += `**चंद्रमा का प्रभाव:** चंद्रमा आपके ${moon.house}वें भाव (${houseMeanings[moon.house]}) में है। यह दर्शाता है कि आपका मन, भावनाएं और आंतरिक शांति मुख्य रूप से इसी दिशा में केंद्रित रहती है।\n\n`;
+    // Comprehensive Planet Analysis
+    report += `### 🌌 जन्म कुण्डली (D1) ग्रहीय विश्लेषण\n\n`;
+    
+    const planetMeanings: { [key: string]: string } = {
+      'Sun': 'आत्मा, आत्मविश्वास, पिता और नेतृत्व',
+      'Moon': 'मन, भावनाएं, माता और आंतरिक शांति',
+      'Mars': 'ऊर्जा, साहस, भाई और महत्वाकांक्षा',
+      'Mercury': 'बुद्धि, संचार, व्यापार और तर्कशक्ति',
+      'Jupiter': 'ज्ञान, भाग्य, गुरु, धर्म और विस्तार',
+      'Venus': 'प्रेम, सौंदर्य, विवाह, कला और भौतिक सुख',
+      'Saturn': 'कर्म, अनुशासन, आयु, धैर्य और संरचना',
+      'Rahu': 'माया, विस्तार, भौतिक इच्छाएं और अप्रत्याशित घटनाएं',
+      'Ketu': 'मोक्ष, वैराग्य, अंतर्ज्ञान और पूर्व जन्म के संस्कार',
+    };
+
+    const hindiPlanetNames: { [key: string]: string } = {
+      'Sun': 'सूर्य', 'Moon': 'चंद्रमा', 'Mars': 'मंगल', 'Mercury': 'बुध',
+      'Jupiter': 'बृहस्पति (गुरु)', 'Venus': 'शुक्र', 'Saturn': 'शनि',
+      'Rahu': 'राहु', 'Ketu': 'केतु'
+    };
+
+    const signNatures: { [key: number]: string } = {
+      1: "अत्यंत ऊर्जावान, आक्रामक और त्वरित (Fire)",
+      2: "स्थिर, व्यावहारिक और भौतिक सुकून चाहने वाले (Earth)",
+      3: "बौद्धिक, चंचल और संवाद-प्रधान (Air)",
+      4: "बेहद संवेदनशील, भावुक और सुरक्षात्मक (Water)",
+      5: "राजसी, आत्मविश्वासी और नेतृत्व करने वाले (Fire)",
+      6: "विश्लेषणात्मक, तार्किक और परफेक्शनिस्ट (Earth)",
+      7: "कलावादी, संतुलित और सामंजस्य (Harmony) चाहने वाले (Air)",
+      8: "रहस्यमयी, तीव्र (Intense) और परिवर्तनकारी (Water)",
+      9: "दार्शनिक, स्वतंत्र और आदर्शवादी (Fire)",
+      10: "अत्यंत कर्मठ, अनुशासित और लक्ष्य-केंद्रित (Earth)",
+      11: "प्रगतिशील, विद्रोही और बौद्धिक (Air)",
+      12: "आध्यात्मिक, स्वप्निल और गहरी करुणा से भरे (Water)"
+    };
+
+    Object.keys(data.planets).forEach(pName => {
+      if (pName === 'Ascendant' || !planetMeanings[pName]) return;
+      
+      const p = data.planets[pName];
+      const signName = hindiSigns[p.sign];
+      const houseMeaning = houseMeanings[p.house];
+      const signNature = signNatures[p.sign];
+      const primaryKaraka = planetMeanings[pName].split(',')[0];
+      
+      report += `- **${hindiPlanetNames[pName]} (${planetMeanings[pName]}):** यह आपकी कुण्डली के ${p.house}वें भाव ("${houseMeaning.split(' और ')[0]}") में **${signName} राशि** में स्थित है। चूँकि ${signName} का स्वभाव ${signNature} है, इसका स्पष्ट अर्थ है कि आपके "${houseMeaning.split(',')[0]}" के मामलों में आपकी ${primaryKaraka} (और इस ग्रह की सम्पूर्ण ऊर्जा) बिल्कुल **${signNature}** तरीके से खुद को अभिव्यक्त (express) करेगी।\n`;
+    });
+    
+    report += `\n`;
 
     // Dasha Analysis
     if (data.dasha) {
@@ -220,6 +265,7 @@ export class NavaAstroSDK {
     }
 
     // Gochar (Transit) Sade Sati check
+    const moon = data.planets['Moon'];
     if (data.transits && moon) {
       report += `### 🔄 वर्तमान गोचर (Transits) प्रभाव\n`;
       const transitSaturn = data.transits['Saturn'];

@@ -215,6 +215,27 @@ export class NavaAstroSDK {
       12: "आध्यात्मिक, स्वप्निल और गहरी करुणा से भरे (Water)"
     };
 
+    const getDignity = (planet: string, sign: number): { state: string, strength: number } => {
+      const dignities: any = {
+        'Sun': { exalt: 1, deb: 7, own: [5] },
+        'Moon': { exalt: 2, deb: 8, own: [4] },
+        'Mars': { exalt: 10, deb: 4, own: [1, 8] },
+        'Mercury': { exalt: 6, deb: 12, own: [3, 6] },
+        'Jupiter': { exalt: 4, deb: 10, own: [9, 12] },
+        'Venus': { exalt: 12, deb: 6, own: [2, 7] },
+        'Saturn': { exalt: 7, deb: 1, own: [10, 11] },
+        'Rahu': { exalt: 3, deb: 9, own: [] },
+        'Ketu': { exalt: 9, deb: 3, own: [] },
+      };
+      const d = dignities[planet];
+      if (!d) return { state: "सामान्य", strength: 1 };
+      
+      if (sign === d.exalt) return { state: "उच्च (Exalted)", strength: 3 };
+      if (sign === d.deb) return { state: "नीच (Debilitated)", strength: -1 };
+      if (d.own.includes(sign)) return { state: "स्वराशि (Own Sign)", strength: 2 };
+      return { state: "सामान्य", strength: 1 };
+    };
+
     Object.keys(data.planets).forEach(pName => {
       if (pName === 'Ascendant' || !planetMeanings[pName]) return;
       
@@ -223,8 +244,33 @@ export class NavaAstroSDK {
       const houseMeaning = houseMeanings[p.house];
       const signNature = signNatures[p.sign];
       const primaryKaraka = planetMeanings[pName].split(',')[0];
+      const d1Dig = getDignity(pName, p.sign);
       
-      report += `- **${hindiPlanetNames[pName]} (${planetMeanings[pName]}):** यह आपकी कुण्डली के ${p.house}वें भाव ("${houseMeaning.split(' और ')[0]}") में **${signName} राशि** में स्थित है। चूँकि ${signName} का स्वभाव ${signNature} है, इसका स्पष्ट अर्थ है कि आपके "${houseMeaning.split(',')[0]}" के मामलों में आपकी ${primaryKaraka} (और इस ग्रह की सम्पूर्ण ऊर्जा) बिल्कुल **${signNature}** तरीके से खुद को अभिव्यक्त (express) करेगी।\n`;
+      report += `- **${hindiPlanetNames[pName]} (${planetMeanings[pName]}):** यह आपकी D1 कुण्डली के ${p.house}वें भाव ("${houseMeaning.split(' और ')[0]}") में **${signName} राशि (${d1Dig.state})** में स्थित है। चूँकि ${signName} का स्वभाव ${signNature} है, आपके "${houseMeaning.split(',')[0]}" के मामलों में आपकी ${primaryKaraka} बिल्कुल **${signNature}** तरीके से अभिव्यक्त होगी।\n`;
+
+      const d9P = data.d9Planets ? data.d9Planets[pName] : null;
+      if (d9P) {
+        const d9Dig = getDignity(pName, d9P.sign);
+        const d9SignName = hindiSigns[d9P.sign];
+
+        let d9Result = "";
+        if (p.sign === d9P.sign) {
+           d9Result = `✨ **वर्गोत्तम (Vargottama):** यह ग्रह जन्म कुण्डली (D1) और नवमांश (D9) दोनों में **${signName} राशि** में ही है! यह 'वर्गोत्तम' स्थिति ग्रह को 100% परिणाम देने में सक्षम बनाती है, यह एक असाधारण आशीर्वाद है।`;
+        } else if (d1Dig.strength >= 2 && d9Dig.strength === -1) {
+           d9Result = `⚠️ **नवमांश पतन (D9 Downfall):** जन्म कुण्डली में यह **${d1Dig.state}** है, लेकिन नवमांश (D9) में यह **${d9P.house}वें भाव** में **${d9SignName} राशि** में जाकर **${d9Dig.state}** का हो गया है। बाहरी तौर पर स्थितियाँ मजबूत दिखेंगी, लेकिन भीतर से (या विवाह/उम्र बढ़ने के बाद) इसका परिणाम नकारात्मक या संघर्षपूर्ण हो सकता है।`;
+        } else if (d1Dig.strength <= 1 && d9Dig.strength >= 2) {
+           d9Result = `🌱 **नवमांश उत्थान (D9 Uplift):** जन्म कुण्डली में यह सामान्य या संघर्षरत है, लेकिन नवमांश (D9) के **${d9P.house}वें भाव** में **${d9SignName} राशि** में जाकर यह **${d9Dig.state}** का बन गया है! इसका अर्थ है कि शुरुआत में संघर्ष के बावजूद (विशेषकर 30 वर्ष की आयु या विवाह के बाद), यह ग्रह आपको अप्रत्याशित और जबरदस्त सफलता देगा।`;
+        } else if (d1Dig.strength === -1 && d9Dig.strength === -1) {
+           d9Result = `⚠️ **अत्यधिक कमज़ोर:** यह ग्रह दोनों कुण्डलियों में **${d1Dig.state}** है। इस क्षेत्र में जीवनभर विशेष सावधानी की आवश्यकता है।`;
+        } else if (d1Dig.strength >= 2 && d9Dig.strength >= 2) {
+           d9Result = `🌟 **अत्यधिक बलवान:** जन्म और नवमांश दोनों में यह अपनी उत्तम स्थिति (${d1Dig.state}/${d9Dig.state}) में है। यह ग्रह आपके जीवन का एक बहुत बड़ा मजबूत स्तंभ है!`;
+        } else {
+           d9Result = `*नवमांश बल:* D9 कुण्डली में यह **${d9P.house}वें भाव** में **${d9SignName} राशि (${d9Dig.state})** में जाकर इसके फलों को सूक्ष्मता से सहारा दे रहा है।`;
+        }
+        report += `  > ${d9Result}\n\n`;
+      } else {
+        report += `\n`;
+      }
     });
     
     report += `\n`;
@@ -248,20 +294,6 @@ export class NavaAstroSDK {
       } else {
         report += `यह समय आपके जीवन में ऊर्जा, क्रियान्वयन, अनुशासन और नई स्थिरता के निर्माण का है।\n\n`;
       }
-    }
-
-    // Navamsha (D9) Analysis
-    if (data.d9Planets) {
-      report += `### 🧬 नवमांश (D9) आंतरिक बल\n`;
-      const d9Jupiter = data.d9Planets['Jupiter'];
-      if (d9Jupiter && [4, 9, 12].includes(d9Jupiter.sign)) {
-         report += `नवमांश कुण्डली में बृहस्पति अत्यंत मजबूत स्थिति में है जो आपके भाग्य और वैवाहिक जीवन की आंतरिक शक्ति को मजबूत करता है। `;
-      }
-      const d9Sun = data.d9Planets['Sun'];
-      if (d9Sun && d9Sun.sign === 1) { // Exalted in D9 (Vargottama if D1 is also Aries, but strictly exalted here)
-         report += `नवमांश कुण्डली में आपका सूर्य उच्च का है, जो यह सुनिश्चित करता है कि जीवन के उत्तरार्ध में आपको अपार सम्मान मिलेगा। `;
-      }
-      report += `नवमांश कुण्डली आपको अपनी क्षमताओं की गहराई का एहसास कराती है।\n\n`;
     }
 
     // Gochar (Transit) Sade Sati check

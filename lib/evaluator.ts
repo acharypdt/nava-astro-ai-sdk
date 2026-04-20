@@ -207,6 +207,49 @@ export function evaluateRule(rule: RuleAST, data: AstroChartData): boolean {
       return pData.sign === debilitationSigns[planet];
     }
 
+    case 'DYNAMIC_CONDITION': {
+      // Allows checking a mix of D1, D9, transit, and Dasha conditions simultaneously
+      const { dashaLord, d1, d9, transit } = rule.params;
+      
+      // Check Dasha if provided
+      if (dashaLord) {
+        if (!data.dasha || data.dasha.currentLord !== dashaLord) return false;
+      }
+
+      // Check D1 override conditions
+      if (d1) {
+        const pData = data.planets[d1.planet];
+        if (!pData) return false;
+        if (d1.operator === 'IN_HOUSE' && pData.house !== d1.value) return false;
+        if (d1.operator === 'IN_SIGN' && pData.sign !== d1.value) return false;
+      }
+
+      // Check D9 override conditions
+      if (d9) {
+        if (!data.d9Planets) return false;
+        const pData = data.d9Planets[d9.planet];
+        if (!pData) return false;
+        if (d9.operator === 'IN_HOUSE' && pData.house !== d9.value) return false;
+        if (d9.operator === 'IN_SIGN' && pData.sign !== d9.value) return false;
+      }
+
+      // Check Transit override conditions
+      if (transit) {
+        if (!data.transits) return false;
+        const pData = data.transits[transit.planet];
+        if (!pData) return false;
+        if (transit.operator === 'IN_SIGN' && pData.sign !== transit.value) return false;
+        
+        if (transit.operator === 'CONJUNCT_NATAL') {
+          const natalTarget = data.planets[transit.natalTarget];
+          if (!natalTarget) return false;
+          if (pData.sign !== natalTarget.sign) return false;
+        }
+      }
+
+      return true;
+    }
+
     default:
       console.warn(`Unknown operator: ${rule.operator}`);
       return false;

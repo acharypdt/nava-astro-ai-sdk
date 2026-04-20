@@ -147,6 +147,15 @@ export class NavaAstroSDK {
           { operator: 'SQUARE', params: { planets: ['Venus', 'Mars'] } }
         ],
         category: "Relationship Harmony"
+      },
+      {
+        name: "ग्रहीय महा-सक्रियता (Dynamic Mega Activation)",
+        operator: 'DYNAMIC_CONDITION',
+        params: {
+          dashaLord: 'Saturn',
+          transit: { planet: 'Saturn', operator: 'CONJUNCT_NATAL', natalTarget: 'Moon' }
+        },
+        category: "विशेष गोचर-दशा"
       }
     ];
 
@@ -388,6 +397,9 @@ export class NavaAstroSDK {
             }
             break;
           }
+          case 'ग्रहीय महा-सक्रियता (Dynamic Mega Activation)':
+             report += "🔥 **ग्रहीय महा-सक्रियता (Dynamic Mega Activation):** वर्तमान में आपकी शनि की महादशा भी चल रही है और गोचर (Transit) में भी शनि आपके जन्म के चंद्रमा के ऊपर से गुज़र रहा है! यह एक साथ 'दशा' और 'गोचर' का अत्यंत दुर्लभ और शक्तिशाली मिलन है। जीवन में आपके कर्मों (Karma) की सबसे बड़ी सफाई और सबसे बड़ा मानसिक उत्थान इसी समय हो रहा है। पूरी तरह से अनुशासित हो जाएँ!\n\n";
+             break;
           default:
             report += `🔹 **${rule.name}** [${rule.category}]: यह कुण्डली का एक महत्वपूर्ण योग है जो विशिष्ट प्रभाव डालता है।\n\n`;
         }

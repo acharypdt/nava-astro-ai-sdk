@@ -22,6 +22,8 @@ export interface CalculationParams {
   lat: number;
   lng: number;
   ayanamsa: string;
+  gender?: string;
+  birthLocation?: string;
 }
 
 /**

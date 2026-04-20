@@ -61,7 +61,7 @@ export class NavaAstroSDK {
     }
 
     // 3. Heuristic Interpretation Engine (Purely Local)
-    const aiReport = this.generateHeuristicReport(params.report_type || 'General', activeRules, mathData);
+    const aiReport = this.generateHeuristicReport(params, activeRules, mathData);
 
     return {
       math: mathData,
@@ -167,9 +167,18 @@ export class NavaAstroSDK {
   /**
    * Internal Heuristic Interpretation Engine
    */
-  private generateHeuristicReport(category: string, activeRules: any[], data: AstroChartData): string {
+  private generateHeuristicReport(params: CalculationParams & { report_type?: string }, activeRules: any[], data: AstroChartData): string {
+    const category = params.report_type || 'General';
+    const gender = params.gender || 'Unknown';
+    const location = params.birthLocation || 'Not Specified';
+
     const yogaCount = activeRules.length;
-    let report = `आपकी ${category} कुण्डली (D1), नवमांश (D9), वर्तमान महादशा और गोचर के पूर्ण ज्योतिषीय विश्लेषण के आधार पर विस्तृत रिपोर्ट: \n\n`;
+    let report = `### 📜 कुण्डली धारक का विवरण\n`;
+    report += `- **लिंग:** ${gender === 'Male' ? 'पुरुष' : gender === 'Female' ? 'स्त्री' : 'अन्य'}\n`;
+    report += `- **जन्म स्थान:** ${location}\n`;
+    report += `- **विश्लेषण का विषय:** ${category}\n\n`;
+    
+    report += `आपकी ${category} कुण्डली (D1), नवमांश (D9), वर्तमान महादशा और गोचर के पूर्ण ज्योतिषीय विश्लेषण के आधार पर विस्तृत रिपोर्ट: \n\n`;
 
     const houseMeanings: { [key: number]: string } = {
       1: "व्यक्तित्व, स्वास्थ्य और आत्म-पहचान",

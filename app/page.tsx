@@ -29,6 +29,8 @@ export default function AstroDashboard() {
   const [report, setReport] = useState<any>(null);
   const [formData, setFormData] = useState({
     name: "उदाहरण उपयोगकर्ता",
+    gender: "Male",
+    location: "नई दिल्ली, भारत",
     year: 2005,
     month: 12,
     day: 31,
@@ -56,6 +58,8 @@ export default function AstroDashboard() {
         lat: formData.lat,
         lng: formData.lng,
         report_type: formData.report_type,
+        gender: formData.gender,
+        birthLocation: formData.location,
         ayanamsa: 'LAHIRI'
       });
 
@@ -131,6 +135,33 @@ export default function AstroDashboard() {
                 />
               </div>
 
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-[10px] uppercase tracking-wider opacity-50 block">लिंग (Gender)</label>
+                  <select 
+                    value={formData.gender}
+                    onChange={e => setFormData({...formData, gender: e.target.value})}
+                    className="w-full bg-black/40 border border-white/10 rounded-lg py-3 px-4 appearance-none outline-none focus:ring-1 focus:ring-[#F27D26]"
+                    suppressHydrationWarning
+                  >
+                    <option value="Male">पुरुष (Male)</option>
+                    <option value="Female">स्त्री (Female)</option>
+                    <option value="Other">अन्य (Other)</option>
+                  </select>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] uppercase tracking-wider opacity-50 block">जन्म स्थान (City)</label>
+                  <input 
+                    type="text" 
+                    value={formData.location}
+                    onChange={e => setFormData({...formData, location: e.target.value})}
+                    placeholder="e.g. Delhi, India"
+                    className="w-full bg-black/40 border border-white/10 rounded-lg py-3 px-4 focus:ring-1 focus:ring-[#F27D26] outline-none transition-all"
+                    suppressHydrationWarning
+                  />
+                </div>
+              </div>
+
               <div className="grid grid-cols-3 gap-4">
                 <div className="space-y-1">
                   <label className="text-[10px] uppercase tracking-wider opacity-50 block">वर्ष</label>
@@ -176,6 +207,27 @@ export default function AstroDashboard() {
                   <input type="number" 
                     value={formData.minute}
                     onChange={e => setFormData({...formData, minute: parseInt(e.target.value)})}
+                    className="w-full bg-black/40 border border-white/10 rounded-lg py-3 px-4" 
+                    suppressHydrationWarning
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-[10px] uppercase tracking-wider opacity-50 block">अक्षांश (Latitude)</label>
+                  <input type="number" step="0.0001"
+                    value={formData.lat}
+                    onChange={e => setFormData({...formData, lat: parseFloat(e.target.value)})}
+                    className="w-full bg-black/40 border border-white/10 rounded-lg py-3 px-4" 
+                    suppressHydrationWarning
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] uppercase tracking-wider opacity-50 block">देशांतर (Longitude)</label>
+                  <input type="number" step="0.0001"
+                    value={formData.lng}
+                    onChange={e => setFormData({...formData, lng: parseFloat(e.target.value)})}
                     className="w-full bg-black/40 border border-white/10 rounded-lg py-3 px-4" 
                     suppressHydrationWarning
                   />

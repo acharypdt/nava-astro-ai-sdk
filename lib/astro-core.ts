@@ -210,12 +210,34 @@ export async function calculateChart(params: CalculationParams): Promise<AstroCh
   // 4. Current Vimshottari Dasha
   const dasha = calculateCurrentDasha(planets['Moon'].longitude, birthDate);
 
+  // 5. House Lords Calculation (Vedic Whole Sign)
+  const signRulers: Record<number, string> = {
+    1: 'Mars', 2: 'Venus', 3: 'Mercury', 4: 'Moon', 5: 'Sun', 6: 'Mercury',
+    7: 'Venus', 8: 'Mars', 9: 'Jupiter', 10: 'Saturn', 11: 'Saturn', 12: 'Jupiter'
+  };
+
+  const houseLords: any = {};
+  const houseData: any = {};
+  for (let h = 1; h <= 12; h++) {
+    const sign = (finalLagnaSign - 1 + h - 1) % 12 + 1;
+    houseLords[h] = { planet: signRulers[sign], sign };
+    houseData[h] = { cusp: (sign - 1) * 30, sign };
+  }
+
+  const d9HouseLords: any = {};
+  for (let h = 1; h <= 12; h++) {
+    const sign = (d9LagnaSign - 1 + h - 1) % 12 + 1;
+    d9HouseLords[h] = { planet: signRulers[sign], sign };
+  }
+
   return {
     planets,
     d9Planets,
     transits: simplifiedTransits,
     dasha,
-    houses: {}
+    houses: houseData,
+    houseLords,
+    d9HouseLords
   };
 }
 

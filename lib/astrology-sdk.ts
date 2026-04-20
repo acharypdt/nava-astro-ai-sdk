@@ -284,6 +284,67 @@ export class NavaAstroSDK {
     
     report += `\n`;
 
+    // House Lords Analysis
+    if (data.houseLords) {
+      report += `### 🏛️ भाव स्वामी (House Lords) एवं युति विश्लेषण\n`;
+      
+      const naturalFriends: Record<string, { friends: string[], enemies: string[] }> = {
+        'Sun': { friends: ['Moon', 'Mars', 'Jupiter'], enemies: ['Venus', 'Saturn'] },
+        'Moon': { friends: ['Sun', 'Mercury'], enemies: [] },
+        'Mars': { friends: ['Sun', 'Moon', 'Jupiter'], enemies: ['Mercury'] },
+        'Mercury': { friends: ['Sun', 'Venus'], enemies: ['Moon'] },
+        'Jupiter': { friends: ['Sun', 'Moon', 'Mars'], enemies: ['Mercury', 'Venus'] },
+        'Venus': { friends: ['Mercury', 'Saturn'], enemies: ['Sun', 'Moon'] },
+        'Saturn': { friends: ['Mercury', 'Venus'], enemies: ['Sun', 'Moon', 'Mars'] },
+        'Rahu': { friends: ['Mercury', 'Venus', 'Saturn'], enemies: ['Sun', 'Moon', 'Mars'] },
+        'Ketu': { friends: ['Mars', 'Jupiter'], enemies: ['Sun', 'Moon'] }
+      };
+
+      const signRulers: Record<number, string> = {
+        1: 'Mars', 2: 'Venus', 3: 'Mercury', 4: 'Moon', 5: 'Sun', 6: 'Mercury',
+        7: 'Venus', 8: 'Mars', 9: 'Jupiter', 10: 'Saturn', 11: 'Saturn', 12: 'Jupiter'
+      };
+
+      const importantHouses = [1, 2, 4, 5, 7, 9, 10, 11];
+      importantHouses.forEach(h => {
+        const lordInfo = data.houseLords![h];
+        const planet = lordInfo.planet;
+        const planetData = data.planets[planet];
+        if (planetData) {
+          const houseMeaning = houseMeanings[h].split(',')[0];
+          const sittingHouse = planetData.house;
+          const sittingHouseMeaning = houseMeanings[sittingHouse].split(',')[0];
+          const signLord = signRulers[planetData.sign];
+          
+          let relation = "तटस्थ (Neutral)";
+          if (planet === signLord) relation = "स्वराशि (Self)";
+          else if (naturalFriends[planet]?.friends.includes(signLord)) relation = "मित्र राशि (Friend)";
+          else if (naturalFriends[planet]?.enemies.includes(signLord)) relation = "शत्रु राशि (Enemy)";
+
+          report += `- **${h}वें भाव (${houseMeaning}) का अधिपति (${hindiPlanetNames[planet]}):** यह आपके **${sittingHouse}वें भाव** (${sittingHouseMeaning}) में **${relation}** में बैठा है। `;
+          
+          // Dynamical result interpretation
+          if (h === sittingHouse) {
+            report += `चूँकि यह अपने ही घर में है, यह आपको उस भाव से संबंधित क्षेत्रों में **असाधारण स्थिरता और सफलता** प्रदान करेगा। यह एक अत्यंत शुभ स्थिति है। `;
+          } else if ([6, 8, 12].includes(sittingHouse)) {
+            report += `यह त्रिक भाव में स्थित होने के कारण, **'${houseMeaning}'** के क्षेत्रों में कुछ संघर्ष या व्यय (Losses) दे सकता है, लेकिन यह आपको आध्यात्मिक रूप से मज़बूत बनाएगा। `;
+          } else if ([1, 4, 7, 10].includes(sittingHouse)) {
+            report += `केंद्र भाव में बैठने के कारण यह आपको **शक्तिशाली कर्म और समाजिक प्रतिष्ठा** दिलाने में सहायक होगा। `;
+          } else if ([5, 9].includes(sittingHouse)) {
+            report += `त्रिकोण भाव (लक्ष्मी स्थान) में बैठने के कारण यह **विशाल भाग्य और धन लाभ** का योग बना रहा है। यह आपके जीवन का सबसे सकारात्मक बिंदु हो सकता है। `;
+          }
+
+          if (relation === "शत्रु राशि (Enemy)") {
+            report += `हालांकि, शत्रु राशि में होने के कारण ये परिणाम थोड़े विलंब (Delay) से या कड़ी मेहनत के बाद प्राप्त होंगे। निराश न हों, आपका संघर्ष ही आपकी जीत का आधार बनेगा। `;
+          } else if (relation === "मित्र राशि (Friend)") {
+            report += `मित्र राशि में होने के कारण, स्थितियाँ आपके अनुकूल रहेंगी और आपको कम मेहनत में बेहतर परिणाम मिलेंगे। `;
+          }
+          report += `\n`;
+        }
+      });
+      report += `\n`;
+    }
+
     // Dasha Analysis
     if (data.dasha) {
       report += `### ⏳ वर्तमान विंशोत्तरी महादशा प्रभाव\n`;

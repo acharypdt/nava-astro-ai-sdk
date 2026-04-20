@@ -39,6 +39,18 @@ export interface AstroChartData {
       sign: number;
     };
   };
+  houseLords?: {
+    [house: number]: {
+      planet: string;
+      sign: number;
+    };
+  };
+  d9HouseLords?: {
+    [house: number]: {
+      planet: string;
+      sign: number;
+    };
+  };
 }
 
 export interface RuleAST {
@@ -248,6 +260,24 @@ export function evaluateRule(rule: RuleAST, data: AstroChartData): boolean {
       }
 
       return true;
+    }
+
+    case 'HOUSE_LORD_IN': {
+      const { house, targetHouse } = rule.params;
+      const lord = data.houseLords?.[house];
+      if (!lord) return false;
+      const planetData = data.planets[lord.planet];
+      if (!planetData) return false;
+      return planetData.house === targetHouse;
+    }
+
+    case 'D9_HOUSE_LORD_IN': {
+      const { house, targetHouse } = rule.params;
+      const lord = data.d9HouseLords?.[house];
+      if (!lord) return false;
+      const planetData = data.d9Planets?.[lord.planet];
+      if (!planetData) return false;
+      return planetData.house === targetHouse;
     }
 
     default:

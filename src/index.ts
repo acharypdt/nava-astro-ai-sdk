@@ -10,7 +10,6 @@ export interface Env {
   DB: D1Database;
   PLATFORM_SECRETS: KVNamespace;
   AI: any;
-  VECTOR_INDEX: VectorizeIndex;
   ENVIRONMENT: string;
 }
 
@@ -43,6 +42,19 @@ const worker = {
       } catch (error) {
         return await handleGlobalError(error, `API_ROUTE:${url.pathname}`, env);
       }
+    }
+
+    // --- Cloudflare AI Search Endpoint ---
+    if (url.pathname === '/api/ai-search' && request.method === 'POST') {
+      const body = await request.json() as any;
+      const sdk = new NavaAstroSDK({ env });
+      
+      const answer = await sdk.resolveQuestionWithAI(body.question, body.math_data);
+      
+      return Response.json({
+        success: true,
+        answer
+      });
     }
 
     return new Response("Not Found", { status: 404 });

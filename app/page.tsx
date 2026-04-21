@@ -23,7 +23,6 @@ import {
   FileJson
 } from 'lucide-react';
 import { NavaAstroSDK } from '@/lib/astrology-sdk';
-import { GoogleGenAI } from '@google/genai';
 
 export default function AstroDashboard() {
   const [loading, setLoading] = useState(false);
@@ -72,31 +71,25 @@ export default function AstroDashboard() {
 
       // Question handling
       if (formData.question && formData.question.trim().length > 0) {
-        if (formData.useAI && process.env.NEXT_PUBLIC_GEMINI_API_KEY) {
-          // Ask Gemini regarding the specific question based on the calculated report
+        if (formData.useAI) {
+          // CALL CLOUDFLARE AI SEARCH (Backend Unified Engine)
           try {
-            const ai = new GoogleGenAI({ apiKey: process.env.NEXT_PUBLIC_GEMINI_API_KEY });
-            const prompt = `तुम एक प्रकांड वैदिक ज्योतिषी हो। नीचे दी गई कुण्डली विश्लेषण रिपोर्ट (हेयूरिस्टिक डेटा) को ध्यान से पढ़ें:
-
-[कुण्डली रिपोर्ट]
-${analysis.aiReport}
-[/कुण्डली रिपोर्ट]
-
-उपयोगकर्ता का विशेष प्रश्न है: "${formData.question}"
-
-उपरोक्त कुण्डली रिपोर्ट के निष्कर्षों को आधार मानते हुए, इस विशिष्ट प्रश्न का अत्यंत सटीक, प्रामाणिक और ज्योतिषीय दृष्टिकोण से उत्तर दें। उत्तर को स्पष्ट और सहायक (Empathetic) रखें।`;
-
-            const response = await ai.models.generateContent({
-               model: 'gemini-3-flash-preview',
-               contents: prompt
+            const aiSearchRes = await fetch('/api/ai-search', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                question: formData.question,
+                math_data: analysis.math
+              })
             });
+            const aiSearchResult = await aiSearchRes.json() as any;
             
-            if (response.text) {
-               finalAIReport = `### ❓ आपके प्रश्न का उत्तर (AI Selection: ON)\n\n**प्रश्न:** ${formData.question}\n\n**उत्तर:**\n${response.text}\n\n---\n\n` + finalAIReport;
+            if (aiSearchResult.answer) {
+              finalAIReport = `### 🔍 Cloudflare Native AI Search (April 16 Update)\n\n**प्रश्न:** ${formData.question}\n\n**उत्तर:**\n${aiSearchResult.answer}\n\n---\n\n` + finalAIReport;
             }
           } catch (genErr) {
-            console.error("Gemini AI API Error:", genErr);
-            finalAIReport = `### ❓ आपके प्रश्न का उत्तर (AI Selection: ERROR)\n\n**प्रश्न:** ${formData.question}\n\n*(Gemini AI से उत्तर प्राप्त करने में तकनीकी समस्या हुई।)*\n\n---\n\n` + finalAIReport;
+            console.error("Cloudflare AI Search Error:", genErr);
+            finalAIReport = `### ❓ Cloudflare Native AI Search (ERROR)\n\n**प्रश्न:** ${formData.question}\n\n*(Cloudflare Native AI से उत्तर प्राप्त करने में तकनीकी समस्या हुई।)*\n\n---\n\n` + finalAIReport;
           }
         } else {
            // Powerful Custom SDK Heuristic Response (Offline/No-AI mode)

@@ -18,6 +18,7 @@ export interface AnalysisResult {
   math: AstroChartData;
   activeRules: any[];
   aiReport?: string;
+  heuristicAnswer?: string;
 }
 
 export class NavaAstroSDK {
@@ -162,6 +163,93 @@ export class NavaAstroSDK {
     return staticRules
       .filter(rule => evaluateRule(rule as any, data))
       .map(r => ({ name: r.name, category: r.category }));
+  }
+
+  /**
+   * Resolve a specific question using built-in heuristic logic (No Gemini)
+   */
+  resolveQuestionHeuristically(question: string, data: AstroChartData): string {
+    const q = question.toLowerCase();
+    const hindiSigns = ["", "मेष", "वृषभ", "मिथुन", "कर्क", "सिंह", "कन्या", "तुला", "वृश्चिक", "धनु", "मकर", "कुंभ", "मीन"];
+    const houseMeanings: { [key: number]: string } = {
+      1: "व्यक्तित्व", 2: "धन", 3: "साहस", 4: "सुख", 5: "शिक्षा", 
+      6: "संघर्ष", 7: "विवाह", 8: "आयु", 9: "भाग्य", 10: "करियर", 11: "लाभ", 12: "व्यय"
+    };
+
+    let answer = `आपके प्रश्न: "${question}" का विश्लेषण (Heuristic Analytics):\n\n`;
+
+    const getLordInfo = (h: number) => {
+      const lord = data.houseLords?.[h];
+      if (!lord) return null;
+      const planetDetails = data.planets[lord.planet];
+      return { lord, planetDetails };
+    };
+
+    // Keyword Logic
+    if (q.includes("शादी") || q.includes("विवाह") || q.includes("marriage")) {
+      const info7 = getLordInfo(7);
+      if (info7) {
+        answer += `सांप्रत ज्योतिषीय स्थिति दर्शाती है कि आपके 7वें भाव (विवाह स्थान) के स्वामी **${info7.lord.planet}** हैं, जो कुण्डली में **${info7.planetDetails.house}वें भाव** में **${hindiSigns[info7.planetDetails.sign]} राशि** में स्थित हैं। `;
+        if ([6, 8, 12].includes(info7.planetDetails.house)) {
+           answer += `विवाह स्थान के स्वामी का त्रिक भाव में होना कुछ अड़चनों को दर्शाता है। `;
+        } else if ([1, 4, 7, 10, 5, 9].includes(info7.planetDetails.house)) {
+           answer += `यह विवाह के लिए एक अत्यंत शुभ योग है जो सुखद वैवाहिक जीवन की ओर संकेत करता है। `;
+        }
+      }
+      const venus = data.planets['Venus'];
+      answer += `शुक्र (विवाह का कारक) **${venus.house}वें भाव** में है, जो भावनाओं और आकर्षण का संतुलन बनाए रखने में मदद करेगा।`;
+    } 
+    else if (q.includes("करियर") || q.includes("नौकरी") || q.includes("career") || q.includes("job")) {
+      const info10 = getLordInfo(10);
+      if (info10) {
+        answer += `दशम भाव (करियर) के अधिपति **${info10.lord.planet}** आपके **${info10.planetDetails.house}वें भाव** में स्थित हैं। यह इंगित करता है कि आपका कार्यक्षेत्र मुख्य रूप से "${houseMeanings[info10.planetDetails.house]}" से संबंधित गतिविधियों से प्रभावित होगा। `;
+        if (info10.planetDetails.house === 10) answer += `दशमेश का दसवें में होना करियर में उच्च पद और स्थिरता का जबरदस्त योग बनाता है।`;
+      }
+    }
+    else if (q.includes("पैसा") || q.includes("धन") || q.includes("money") || q.includes("finance")) {
+      const info2 = getLordInfo(2);
+      const info11 = getLordInfo(11);
+      answer += `आर्थिक स्थिति के लिए 2वें (संचित धन) और 11वें (लाभ) भाव का विश्लेषण महत्वपूर्ण है। `;
+      if (info2 && info11) {
+         answer += `आपके धन भाव के स्वामी **${info2.lord.planet}** और लाभ भाव के स्वामी **${info11.lord.planet}** हैं। `;
+         if (info11.planetDetails.house === 11 || info11.planetDetails.house === 2) answer += `लाभ भाव का मजबूत होना निरंतर आय और आर्थिक समृद्धि को दर्शाता है।`;
+      }
+    }
+    else if (q.includes("स्वास्थ्य") || q.includes("health") || q.includes("तबीयत")) {
+      const info1 = getLordInfo(1);
+      if (info1) {
+        answer += `लग्न (स्वास्थ्य और आत्म) के स्वामी **${info1.lord.planet}** की स्थिति **${info1.planetDetails.house}वें भाव** में है। `;
+        if ([6, 8].includes(info1.planetDetails.house)) answer += `स्वास्थ्य के प्रति थोड़ी सावधानी और नियमित योग की आवश्यकता हो सकती है।`;
+        else answer += `यह दर्शाता है कि आपकी जीवनी शक्ति और आरोग्य क्षमता (Vitality) काफी अच्छी है।`;
+      }
+    }
+    else if (q.includes("शिक्षा") || q.includes("पढ़ाई") || q.includes("education") || q.includes("study")) {
+      const info5 = getLordInfo(5);
+      if (info5) {
+        answer += `पंचम भाव (शिक्षा और बुद्धि) के स्वामी **${info5.lord.planet}** आपके **${info5.planetDetails.house}वें भाव** में हैं। `;
+        if (info5.planetDetails.house === 5 || info5.planetDetails.house === 9) answer += `यह उच्च शिक्षा और बौद्धिक सफलता के लिए एक श्रेष्ठ योग है।`;
+      }
+    }
+    else if (q.includes("भाग्य") || q.includes("luck") || q.includes("fortune")) {
+      const info9 = getLordInfo(9);
+      if (info9) {
+        answer += `भाग्य भाव के अधिपति **${info9.lord.planet}** की स्थिति **${info9.planetDetails.house}वें भाव** में है। `;
+        if ([9, 10, 11, 1, 4, 7].includes(info9.planetDetails.house)) answer += `आपका भाग्य प्रबल है और ईश्वरीय कृपा आपके साथ है।`;
+      }
+    }
+    else if (q.includes("विदेश") || q.includes("foreign") || q.includes("abroad")) {
+      const info12 = getLordInfo(12);
+      const info9 = getLordInfo(9);
+      answer += `विदेश यात्रा के लिए 12वें और 9वें भाव का सक्रिय होना जरूरी है। `;
+      if (info12 && info9) {
+        if ([12, 9, 7].includes(info12.planetDetails.house)) answer += `आपकी कुण्डली में सुदूर यात्रा या विदेश निवास के प्रबल संकेत मिल रहे हैं।`;
+      }
+    }
+    else {
+      answer += `आपके प्रश्न का उत्तर देने के लिए कुण्डली के प्रमुख योगों का अध्ययन किया गया है। वर्तमान महादशा और गोचर के अनुसार आपकी कुण्डली सकारात्मक परिणामों की ओर संकेत कर रही है। विस्तृत जानकारी के लिए मुख्य रिपोर्ट के 'भाव स्वामी' और 'दशा' अनुभागों का संदर्भ लें।`;
+    }
+
+    return answer;
   }
 
   /**

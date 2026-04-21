@@ -23,6 +23,7 @@ import {
   FileJson
 } from 'lucide-react';
 import { NavaAstroSDK } from '@/lib/astrology-sdk';
+import { GoogleGenAI } from '@google/genai';
 
 export default function AstroDashboard() {
   const [loading, setLoading] = useState(false);
@@ -39,7 +40,9 @@ export default function AstroDashboard() {
     lat: 23.91,
     lng: 76.91,
     timezone: 5.5,
-    report_type: "सामान्य"
+    report_type: "सामान्य",
+    question: "",
+    useAI: true
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -65,12 +68,49 @@ export default function AstroDashboard() {
         ayanamsa: 'LAHIRI'
       });
 
+      let finalAIReport = analysis.aiReport;
+
+      // Question handling
+      if (formData.question && formData.question.trim().length > 0) {
+        if (formData.useAI && process.env.NEXT_PUBLIC_GEMINI_API_KEY) {
+          // Ask Gemini regarding the specific question based on the calculated report
+          try {
+            const ai = new GoogleGenAI({ apiKey: process.env.NEXT_PUBLIC_GEMINI_API_KEY });
+            const prompt = `तुम एक प्रकांड वैदिक ज्योतिषी हो। नीचे दी गई कुण्डली विश्लेषण रिपोर्ट (हेयूरिस्टिक डेटा) को ध्यान से पढ़ें:
+
+[कुण्डली रिपोर्ट]
+${analysis.aiReport}
+[/कुण्डली रिपोर्ट]
+
+उपयोगकर्ता का विशेष प्रश्न है: "${formData.question}"
+
+उपरोक्त कुण्डली रिपोर्ट के निष्कर्षों को आधार मानते हुए, इस विशिष्ट प्रश्न का अत्यंत सटीक, प्रामाणिक और ज्योतिषीय दृष्टिकोण से उत्तर दें। उत्तर को स्पष्ट और सहायक (Empathetic) रखें।`;
+
+            const response = await ai.models.generateContent({
+               model: 'gemini-3-flash-preview',
+               contents: prompt
+            });
+            
+            if (response.text) {
+               finalAIReport = `### ❓ आपके प्रश्न का उत्तर (AI Selection: ON)\n\n**प्रश्न:** ${formData.question}\n\n**उत्तर:**\n${response.text}\n\n---\n\n` + finalAIReport;
+            }
+          } catch (genErr) {
+            console.error("Gemini AI API Error:", genErr);
+            finalAIReport = `### ❓ आपके प्रश्न का उत्तर (AI Selection: ERROR)\n\n**प्रश्न:** ${formData.question}\n\n*(Gemini AI से उत्तर प्राप्त करने में तकनीकी समस्या हुई।)*\n\n---\n\n` + finalAIReport;
+          }
+        } else {
+           // Powerful Custom SDK Heuristic Response (Offline/No-AI mode)
+           const hAnswer = sdk.resolveQuestionHeuristically(formData.question, analysis.math);
+           finalAIReport = `### 🔍 आपके प्रश्न का उत्तर (Custom SDK: ON)\n\n${hAnswer}\n\n---\n\n` + finalAIReport;
+        }
+      }
+
       // Align with the standardized 'AnalysisResult' structure
       setReport({
         math: analysis.math,
         analysis: {
           activeRules: analysis.activeRules,
-          aiReport: analysis.aiReport
+          aiReport: finalAIReport
         }
       });
     } catch (err: any) {
@@ -260,6 +300,29 @@ export default function AstroDashboard() {
                   <option value="Spiritual">अध्यात्म</option>
                   <option value="General">सामान्य</option>
                 </select>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] uppercase tracking-wider opacity-50 block">अपना विशिष्ट प्रश्न पूछें (Optional)</label>
+                <textarea 
+                  value={formData.question}
+                  onChange={e => setFormData({...formData, question: e.target.value})}
+                  placeholder="उदा. 'क्या मुझे इस वर्ष विदेश जाने का अवसर मिलेगा?' या 'मेरे विवाह का सही समय क्या है?'"
+                  className="w-full bg-black/40 border border-white/10 rounded-lg py-3 px-4 focus:ring-1 focus:ring-[#F27D26] outline-none min-h-[80px]"
+                  suppressHydrationWarning
+                />
+              </div>
+
+              <div className="flex items-center gap-3 bg-white/5 p-3 rounded-lg border border-white/5 cursor-pointer select-none"
+                   onClick={() => setFormData({...formData, useAI: !formData.useAI})}>
+                <div className={`w-10 h-5 rounded-full transition-colors relative ${formData.useAI ? 'bg-[#F27D26]' : 'bg-gray-600'}`}>
+                  <motion.div 
+                    animate={{ x: formData.useAI ? 22 : 2 }}
+                    className="absolute top-1 w-3 h-3 bg-white rounded-full"
+                  />
+                </div>
+                <span className="text-xs font-mono uppercase tracking-wider">AI विश्लेषण का उपयोग करें</span>
+                <Sparkles className={`w-4 h-4 ${formData.useAI ? 'text-[#F27D26]' : 'text-gray-600'}`} />
               </div>
 
               <button 

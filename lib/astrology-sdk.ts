@@ -148,15 +148,6 @@ export class NavaAstroSDK {
           { operator: 'SQUARE', params: { planets: ['Venus', 'Mars'] } }
         ],
         category: "Relationship Harmony"
-      },
-      {
-        name: "ग्रहीय महा-सक्रियता (Dynamic Mega Activation)",
-        operator: 'DYNAMIC_CONDITION',
-        params: {
-          dashaLord: 'Saturn',
-          transit: { planet: 'Saturn', operator: 'CONJUNCT_NATAL', natalTarget: 'Moon' }
-        },
-        category: "विशेष गोचर-दशा"
       }
     ];
 
@@ -185,71 +176,100 @@ export class NavaAstroSDK {
       return { lord, planetDetails };
     };
 
+    const dashaLord = data.dasha?.currentLord || "";
+    let remedy = "\n\n💡 **ज्योतिषीय परामर्श (Remedy):** ";
+
     // Keyword Logic
     if (q.includes("शादी") || q.includes("विवाह") || q.includes("marriage")) {
       const info7 = getLordInfo(7);
       if (info7) {
-        answer += `सांप्रत ज्योतिषीय स्थिति दर्शाती है कि आपके 7वें भाव (विवाह स्थान) के स्वामी **${info7.lord.planet}** हैं, जो कुण्डली में **${info7.planetDetails.house}वें भाव** में **${hindiSigns[info7.planetDetails.sign]} राशि** में स्थित हैं। `;
+        answer += `आपके 7वें भाव (विवाह) के स्वामी **${info7.lord.planet}** हैं, जो कुण्डली में **${info7.planetDetails.house}वें भाव** में **${hindiSigns[info7.planetDetails.sign]} राशि** में स्थित हैं। `;
         if ([6, 8, 12].includes(info7.planetDetails.house)) {
-           answer += `विवाह स्थान के स्वामी का त्रिक भाव में होना कुछ अड़चनों को दर्शाता है। `;
+           answer += `विवाह स्थान के स्वामी का त्रिक भाव (Bad Houses) में होना वैवाहिक सुख में कुछ बाधा या देरी का संकेत देता है। `;
         } else if ([1, 4, 7, 10, 5, 9].includes(info7.planetDetails.house)) {
-           answer += `यह विवाह के लिए एक अत्यंत शुभ योग है जो सुखद वैवाहिक जीवन की ओर संकेत करता है। `;
+           answer += `यह विवाह के लिए एक अत्यंत शुभ स्थिति है जो एक सहायक और समृद्ध जीवनसाथी की ओर इशारा करती है। `;
+        }
+
+        if (dashaLord === info7.lord.planet || dashaLord === 'Venus') {
+            answer += `💥 **महत्वपूर्ण:** अभी आपकी **${dashaLord}** की महादशा भी चल रही है, जो इस समय विवाह के योगों को बहुत अधिक सक्रिय (Activate) कर रही है। `;
         }
       }
       const venus = data.planets['Venus'];
-      answer += `शुक्र (विवाह का कारक) **${venus.house}वें भाव** में है, जो भावनाओं और आकर्षण का संतुलन बनाए रखने में मदद करेगा।`;
+      answer += `शुक्र (विवाह का कारक) **${venus.house}वें भाव** में स्थित होकर आपके संबंधों में आकर्षण और प्रेम को नियंत्रित कर रहा है। `;
+      remedy += "वैवाहिक सुख के लिए 'शुक्र' के बीज मंत्र का जाप करें और माँ दुर्गा की उपासना करें। माता-पिता का सम्मान करना विशेष लाभ देगा।";
     } 
-    else if (q.includes("करियर") || q.includes("नौकरी") || q.includes("career") || q.includes("job")) {
+    else if (q.includes("करियर") || q.includes("नौकरी") || q.includes("career") || q.includes("job") || q.includes("business")) {
       const info10 = getLordInfo(10);
       if (info10) {
-        answer += `दशम भाव (करियर) के अधिपति **${info10.lord.planet}** आपके **${info10.planetDetails.house}वें भाव** में स्थित हैं। यह इंगित करता है कि आपका कार्यक्षेत्र मुख्य रूप से "${houseMeanings[info10.planetDetails.house]}" से संबंधित गतिविधियों से प्रभावित होगा। `;
-        if (info10.planetDetails.house === 10) answer += `दशमेश का दसवें में होना करियर में उच्च पद और स्थिरता का जबरदस्त योग बनाता है।`;
+        answer += `दशम भाव (करियर) के अधिपति **${info10.lord.planet}** आपके **${info10.planetDetails.house}वें भाव** में विराजमान हैं। यह स्पष्ट करता है कि आपके करियर की दिशा मुख्य रूप से "${houseMeanings[info10.planetDetails.house]}" से जुड़ी रहेगी। `;
+        if (info10.planetDetails.house === 10) answer += `दशमेश का अपने ही भाव (10th) में होना करियर में उच्च पद, सत्ता और जबरदस्त स्थिरता का योग बनाता है। `;
+        
+        if (dashaLord === info10.lord.planet || dashaLord === 'Saturn' || dashaLord === 'Sun') {
+            answer += `💥 **महत्वपूर्ण:** वर्तमान **${dashaLord}** की दशा आपके पेशेवर जीवन (Professional Life) में बड़े बदलाव और प्रगति का संकेत दे रही है। `;
+        }
       }
+      remedy += "कार्यक्षेत्र में सफलता के लिए प्रत्येक शनिवार को शनि देव को सरसों के तेल का दीप अर्पित करें और 'ॐ नमः शिवाय' का मानसिक जाप करें।";
     }
-    else if (q.includes("पैसा") || q.includes("धन") || q.includes("money") || q.includes("finance")) {
+    else if (q.includes("पैसा") || q.includes("धन") || q.includes("money") || q.includes("finance") || q.includes("debt")) {
       const info2 = getLordInfo(2);
       const info11 = getLordInfo(11);
-      answer += `आर्थिक स्थिति के लिए 2वें (संचित धन) और 11वें (लाभ) भाव का विश्लेषण महत्वपूर्ण है। `;
+      answer += `आर्थिक समृद्धि के लिए 2वें (बचत) और 11वें (आमदनी) भाव का विश्लेषण किया गया है। `;
       if (info2 && info11) {
          answer += `आपके धन भाव के स्वामी **${info2.lord.planet}** और लाभ भाव के स्वामी **${info11.lord.planet}** हैं। `;
-         if (info11.planetDetails.house === 11 || info11.planetDetails.house === 2) answer += `लाभ भाव का मजबूत होना निरंतर आय और आर्थिक समृद्धि को दर्शाता है।`;
+         if (info11.planetDetails.house === 11 || info11.planetDetails.house === 2 || info11.planetDetails.house === 5 || info11.planetDetails.house === 9) {
+             answer += `धन और लाभ भाव के स्वामियों का केंद्र या त्रिकोण में होना **'धन योग'** का निर्माण करता है, जो दीर्घकालिक समृद्धि सुनिश्चित करता है। `;
+         }
+         if (q.includes("ऋण") || q.includes("कर्ज") || q.includes("debt")) {
+            const info6 = getLordInfo(6);
+            answer += `छठे भाव (ऋण) के स्वामी **${info6?.lord.planet}** की स्थिति यह तय करेगी कि आप कर्ज से कितनी जल्दी मुक्त होंगे। `;
+         }
       }
+      remedy += "आर्थिक उन्नति के लिए श्री सूक्त का पाठ करें और शुक्रवार को सफेद वस्तुओं (जैसे चावल या दूध) का दान करें। कनकधारा स्त्रोत का पाठ अत्यंत प्रभावशाली रहेगा।";
     }
-    else if (q.includes("स्वास्थ्य") || q.includes("health") || q.includes("तबीयत")) {
+    else if (q.includes("स्वास्थ्य") || q.includes("health") || q.includes("तबीयत") || q.includes("disease")) {
       const info1 = getLordInfo(1);
       if (info1) {
-        answer += `लग्न (स्वास्थ्य और आत्म) के स्वामी **${info1.lord.planet}** की स्थिति **${info1.planetDetails.house}वें भाव** में है। `;
-        if ([6, 8].includes(info1.planetDetails.house)) answer += `स्वास्थ्य के प्रति थोड़ी सावधानी और नियमित योग की आवश्यकता हो सकती है।`;
-        else answer += `यह दर्शाता है कि आपकी जीवनी शक्ति और आरोग्य क्षमता (Vitality) काफी अच्छी है।`;
+        answer += `लग्न (शरीर और आत्म-शक्ति) के स्वामी **${info1.lord.planet}** कुण्डली के **${info1.planetDetails.house}वें भाव** में स्थित हैं। `;
+        if ([6, 8, 12].includes(info1.planetDetails.house)) answer += `स्वास्थ्य के प्रति सावधानी बरतें, विशेष रूप से ऊर्जा के संरक्षण की आवश्यकता है। `;
+        else answer += `यह स्थिति दर्शाती है कि आपकी रोग-प्रतिरोधक क्षमता और जीवनी शक्ति बेहतरीन है। `;
       }
+      remedy += "अच्छे स्वास्थ्य के लिए आदित्य हृदय स्तोत्र का पाठ करें और प्रत्येक रविवार को सूर्य को जल अर्पित करें। योग और आयुर्वेद को जीवन का हिस्सा बनाएं।";
     }
-    else if (q.includes("शिक्षा") || q.includes("पढ़ाई") || q.includes("education") || q.includes("study")) {
+    else if (q.includes("शिक्षा") || q.includes("पढ़ाई") || q.includes("education") || q.includes("study") || q.includes("exam")) {
       const info5 = getLordInfo(5);
       if (info5) {
-        answer += `पंचम भाव (शिक्षा और बुद्धि) के स्वामी **${info5.lord.planet}** आपके **${info5.planetDetails.house}वें भाव** में हैं। `;
-        if (info5.planetDetails.house === 5 || info5.planetDetails.house === 9) answer += `यह उच्च शिक्षा और बौद्धिक सफलता के लिए एक श्रेष्ठ योग है।`;
+        answer += `विद्या भाव (5th) के स्वामी **${info5.lord.planet}** आपके **${info5.planetDetails.house}वें भाव** में हैं। `;
+        if (info5.planetDetails.house === 5 || info5.planetDetails.house === 9 || info5.planetDetails.house === 1) {
+            answer += `यह उच्च बौद्धिक क्षमता और परीक्षाओं में सफलता के लिए एक श्रेष्ठ राजयोग के समान है। `;
+        }
       }
+      remedy += "एकाग्रता और विद्या के लिए माँ सरस्वती की आराधना करें और 'ॐ ऐं ह्रीं क्लीं महासरस्वत्यै नमः' मंत्र का जाप करें। उत्तर-पूर्व दिशा में मुख करके पढ़ाई करें।";
     }
     else if (q.includes("भाग्य") || q.includes("luck") || q.includes("fortune")) {
       const info9 = getLordInfo(9);
       if (info9) {
-        answer += `भाग्य भाव के अधिपति **${info9.lord.planet}** की स्थिति **${info9.planetDetails.house}वें भाव** में है। `;
-        if ([9, 10, 11, 1, 4, 7].includes(info9.planetDetails.house)) answer += `आपका भाग्य प्रबल है और ईश्वरीय कृपा आपके साथ है।`;
+        answer += `भाग्य भाव (9th) के अधिपति **${info9.lord.planet}** की स्थिति कुण्डली के **${info9.planetDetails.house}वें भाव** में है। `;
+        if ([9, 10, 11, 1, 4, 7, 5].includes(info9.planetDetails.house)) answer += `आपका भाग्य प्रबल है और ईश्वरीय कृपा आपके कार्यों को सिद्ध करने में सदैव आपके साथ रहेगी। `;
+        else answer += `भाग्य का साथ पाने के लिए आपको कड़ी मेहनत और संकल्प की अधिक आवश्यकता होगी। `;
       }
+      remedy += "भाग्य को प्रबल करने के लिए गुरुजनों और बड़ों का आशीर्वाद लें। विष्णु सहस्रनाम का पाठ करना आपके लिए अत्यंत कल्याणकारी होगा।";
     }
-    else if (q.includes("विदेश") || q.includes("foreign") || q.includes("abroad")) {
+    else if (q.includes("विदेश") || q.includes("foreign") || q.includes("abroad") || q.includes("visa")) {
       const info12 = getLordInfo(12);
       const info9 = getLordInfo(9);
-      answer += `विदेश यात्रा के लिए 12वें और 9वें भाव का सक्रिय होना जरूरी है। `;
+      answer += `विदेश गमन के लिए 12वें (व्यय/विदेश) और 9वें (लंबी यात्रा) भाव का अध्ययन किया जाता है। `;
       if (info12 && info9) {
-        if ([12, 9, 7].includes(info12.planetDetails.house)) answer += `आपकी कुण्डली में सुदूर यात्रा या विदेश निवास के प्रबल संकेत मिल रहे हैं।`;
+        if ([12, 9, 7, 8].includes(info12.planetDetails.house)) answer += `आपकी कुण्डली में सुदूर यात्रा, विदेश में शिक्षा या निवास के अत्यंत प्रबल और स्पष्ट संकेत मिल रहे हैं। `;
+        else answer += `फिलहाल विदेश जाने के योग थोड़े कमजोर हैं, लेकिन वर्तमान दशा के अनुकूल होने पर प्रयास सफल हो सकते हैं। `;
       }
+      remedy += "विदेश संबंधी बाधाओं को दूर करने के लिए भगवान गणेश की उपासना करें और बुधवार को मूंग की दाल का दान करें। राहु के मंत्रों का जाप भी सहायक हो सकता है।";
     }
     else {
-      answer += `आपके प्रश्न का उत्तर देने के लिए कुण्डली के प्रमुख योगों का अध्ययन किया गया है। वर्तमान महादशा और गोचर के अनुसार आपकी कुण्डली सकारात्मक परिणामों की ओर संकेत कर रही है। विस्तृत जानकारी के लिए मुख्य रिपोर्ट के 'भाव स्वामी' और 'दशा' अनुभागों का संदर्भ लें।`;
+      answer += `आपके प्रश्न का सटीक उत्तर देने के लिए कुण्डली के प्रमुख योगों, भाव स्वामियों और वर्तमान दशा का गहन अध्ययन किया गया है। वर्तमान समय आपकी कुण्डली की ऊर्जा को "${dashaLord}" के प्रभाव में सक्रिय कर रहा है। सकारात्मक रहें और कर्म पर विश्वास रखें। विस्तृत जानकारी के लिए मुख्य रिपोर्ट के विशिष्ट अनुभागों का संदर्भ लें।`;
+      remedy = ""; // No specific remedy for general query
     }
 
-    return answer;
+    return answer + remedy;
   }
 
   /**
@@ -478,10 +498,11 @@ export class NavaAstroSDK {
       const transitSaturn = data.transits['Saturn'];
       const moonSign = moon.sign;
       
-      const dist = (transitSaturn.sign - moonSign + 12) % 12;
+      const posMod = (n: number, m: number = 12) => ((n % m) + m) % m;
+      const dist = posMod(transitSaturn.sign - moonSign);
+
       report += `इस समय आकाश में शनि **${hindiSigns[transitSaturn.sign]}** राशि में गोचर कर रहा है। `
-      if (dist === 11 || dist === 0 || posMod(transitSaturn.sign - moonSign) === 1) { 
-        // 12th from moon = 11 array diff, 1st from moon = 0, 2nd from moon = 1.
+      if (dist === 11 || dist === 0 || dist === 1) { 
         report += `🌱 **शनि की साढ़ेसाती (परिवर्तन और परिपक्वता का चरण):** गोचर का शनि आपके जन्म के चंद्रमा (राशि: ${hindiSigns[moonSign]}) के अत्यंत निकट है। यह प्रभाव साढ़ेसाती कहलाता है। यह गोचर आपके जीवन में अनुशासन और गहरी मनोवैज्ञानिक परिपक्वता लाने का एक पवित्र अवसर है। यद्यपि यह समय कभी-कभी मानसिक रूप से थका देने वाला लग सकता है, लेकिन याद रखें कि शनि एक न्यायप्रिय शिक्षक हैं जो 'सोने को तपाकर कुंदन बनाते हैं'। स्वयं पर विश्वास रखें, सकारात्मक रहें और आध्यात्मिक शांति के लिए ध्यान का सहारा लें। आप इस दौर से बहुत मजबूत होकर निकलेंगे।\n\n`;
       } else if (dist === 7) {
         report += `🌱 **अष्टम ढैय्या (आंतरिक शक्ति का जागरण):** शनि वर्तमान में आपके जन्म के चंद्रमा से 8वें भाव में गोचर कर रहा है। यह गोचर जीवन में छिपी हुई शक्तियों को जगाने और अप्रत्याशित रास्तों से आपको नई दिशा दिखाने के लिए है। स्वास्थ्य और दैनिक कार्यों में थोड़ा उतार-चढ़ाव आ सकता है, लेकिन घबराएं नहीं—यह समय आपको अंदर से और अधिक लचीला (resilient) बना रहा है। अपना पूरा ख्याल रखें और शांत मन से हर स्थिति का सामना करें, आप ईश्वरीय सुरक्षा में हैं।\n\n`;
@@ -493,7 +514,7 @@ export class NavaAstroSDK {
 
       const transitJupiter = data.transits['Jupiter'];
       report += `बृहस्पति (गुरु) इस समय **${hindiSigns[transitJupiter.sign]}** राशि में है। `;
-      const jupDist = (transitJupiter.sign - moonSign + 12) % 12;
+      const jupDist = posMod(transitJupiter.sign - moonSign);
       
       if (transitJupiter.sign === moon.sign) {
         report += `✨ **गुरु का गोचर:** गुरु आपके चंद्रमा के ऊपर से गोचर कर रहा है, जो आंतरिक विकास, नई विचारधारा और ज्ञान के अद्भुत अवसर ला रहा है।\n\n`;
@@ -534,7 +555,6 @@ export class NavaAstroSDK {
             const rahu = data.planets['Rahu'];
             const ketu = data.planets['Ketu'];
             if (rahu && ketu) {
-                const hindiSigns = ["", "मेष", "वृषभ", "मिथुन", "कर्क", "सिंह", "कन्या", "तुला", "वृश्चिक", "धनु", "मकर", "कुंभ", "मीन"];
                 const rahuSign = hindiSigns[rahu.sign] || "";
                 const ketuSign = hindiSigns[ketu.sign] || "";
                 report += `🌀 **राहु-केतु कर्म अक्ष (${rahu.house}/${ketu.house} भाव)**: कुण्डली में राहु ${rahu.house}वें भाव (${rahuSign} राशि) में विराजमान है, जो इस क्षेत्र में अत्यंत गहरी महत्वाकांक्षा, भौतिक विस्तार और अप्रत्याशित जुनून पैदा करता है। इसके ठीक 180° विपरीत केतु ${ketu.house}वें भाव (${ketuSign} राशि) में है, जो पूर्व जन्मों की पूर्णता, कर्म त्याग (वैराग्य) और रहस्यमय अंतर्ज्ञान (Mystic intuition) को दर्शाता है। यह "${rahu.house}-${ketu.house}" भावों का ध्रुवीकरण आपके जीवन के एक बेहद खूबसूरत आध्यात्मिक सफर (Spiritual Evolution) को गहराई से परिभाषित करता है। यह एक द्वंद्व से अधिक जीवन को एक व्यापक दृष्टिकोण से अनुभव करने का और खुद को खोजने का महान अवसर है।\n\n`;
@@ -545,7 +565,6 @@ export class NavaAstroSDK {
             const venus = data.planets['Venus'];
             const mars = data.planets['Mars'];
             if (venus && mars) {
-                const hindiSigns = ["", "मेष", "वृषभ", "मिथुन", "कर्क", "सिंह", "कन्या", "तुला", "वृश्चिक", "धनु", "मकर", "कुंभ", "मीन"];
                 const venusSign = hindiSigns[venus.sign] || "";
                 const marsSign = hindiSigns[mars.sign] || "";
                 const dist = (mars.sign - venus.sign + 12) % 12 + 1;
@@ -558,13 +577,10 @@ export class NavaAstroSDK {
                 else if (dist === 3 || dist === 11) aspectName = "लाभ/पराक्रम दृष्टि (सहयोगी)";
                 else aspectName = "विशेष संबंध";
 
-                report += `❤️ **शुक्र-मंगल ${aspectName}**: आपकी कुण्डली में शुक्र ${venus.house}वें भाव (${venusSign}) में और मंगल ${mars.house}वें भाव (${marsSign}) में विराजमान हैं। इन दोनों के बीच यह शक्तिशाली **${aspectName}** आपके प्रेम, आकर्षण और भौतिक सुखों में असीम ऊर्जा भर देता है। चूँकि शुक्र आपकी कोमल भावनाओं का और मंगल आपके जुनून (passion) का प्रतिनिधित्व करता है, यह विशेष "शुक्र-मंगल संबंध" आपके रोमांटिक और वैवाहिक जीवन में अत्यधिक तीव्रता (intensity) लाता है।\n\n`;
+                report += `❤️ **शुक्र-मंगल ${aspectName}**: आपकी कुण्डली में शुक्र ${venus.house}वें भाव (${venusSign}) में और मंगल ${mars.house}वें भाव (${marsSign}) में विराजमान हैं। इन दोनों के बीच यह शक्तिशाली **${aspectName}** आपके प्रेम, आकर्षण और भौतिक सुखों में असीम ऊर्जा भर देता है। चूँकि शुक्र आपकी कोमल भावनाओं का and मंगल आपके जुनून (passion) का प्रतिनिधित्व करता है, यह विशेष "शुक्र-मंगल संबंध" आपके रोमांटिक और वैवाहिक जीवन में अत्यधिक तीव्रता (intensity) लाता है।\n\n`;
             }
             break;
           }
-          case 'ग्रहीय महा-सक्रियता (Dynamic Mega Activation)':
-             report += "🔥 **ग्रहीय महा-सक्रियता (Dynamic Mega Activation):** वर्तमान में आपकी शनि की महादशा भी चल रही है और गोचर (Transit) में भी शनि आपके जन्म के चंद्रमा के ऊपर से गुज़र रहा है! यह एक साथ 'दशा' और 'गोचर' का अत्यंत दुर्लभ और शक्तिशाली मिलन है। जीवन में आपके कर्मों (Karma) की सबसे बड़ी सफाई और सबसे बड़ा मानसिक उत्थान इसी समय हो रहा है। पूरी तरह से अनुशासित हो जाएँ!\n\n";
-             break;
           default:
             report += `🔹 **${rule.name}** [${rule.category}]: यह कुण्डली का एक महत्वपूर्ण योग है जो विशिष्ट प्रभाव डालता है।\n\n`;
         }

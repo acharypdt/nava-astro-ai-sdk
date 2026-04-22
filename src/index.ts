@@ -10,6 +10,7 @@ export interface Env {
   DB: D1Database;
   PLATFORM_SECRETS: KVNamespace;
   AI: any;
+  AI_SEARCH: any;
   ENVIRONMENT: string;
 }
 

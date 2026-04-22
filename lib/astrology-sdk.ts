@@ -72,53 +72,71 @@ export class NavaAstroSDK {
   }
 
   /**
-   * AI-based Question Resolution using Cloudflare Workers AI + Native AI Search
-   * Updated to leverage the April 16 Cloudflare Native AI Search capabilities.
+   * AI-based Question Resolution using Cloudflare Workers AI + Managed AI Search
+   * Updated to leverage the April 16 Cloudflare "AI Search" Managed RAG Service.
    */
   async resolveQuestionWithAI(question: string, data: AstroChartData): Promise<string> {
+    
+    let searchContext = "";
+
+    try {
+       // Step 1: Query the Managed AI Search Service (April 16 Update)
+       // This service indexes our astrology knowledge base for RAG (Retrieval-Augmented Generation)
+       if (this.config.env?.AI_SEARCH) {
+           try {
+               const searchResults = await this.config.env.AI_SEARCH.query(question);
+               
+               // Format the retrieved documents/snippets as context
+               if (searchResults && searchResults.results && searchResults.results.length > 0) {
+                 searchContext = "\n\n[Cloudflare AI Search: Indexed Knowledge]\n";
+                 searchResults.results.slice(0, 3).forEach((res: any) => {
+                    searchContext += `- ${res.text || res.content || JSON.stringify(res)}\n`;
+                 });
+                 searchContext += "[/Cloudflare AI Search]\n";
+               }
+           } catch (idxErr) {
+               console.warn("Could not query Cloudflare AI Search Index (Beta/Not Indexed):", idxErr);
+           }
+       }
+    } catch (e) {
+       console.warn("AI Search setup issue:", e);
+    }
+
     const prompt = `तुम एक प्रकांड वैदिक ज्योतिषी हो। नीचे दी गई कुण्डली विश्लेषण रिपोर्ट को ध्यान से पढ़ें:
 
 [कुण्डली डेटा]
 ${JSON.stringify(data.planets)}
 ${JSON.stringify(data.houseLords)}
-[/कुण्डली डेटा]
+[/कुण्डली डेटा]${searchContext}
 
 उपयोगकर्ता का विशेष प्रश्न है: "${question}"
 
-उपरोक्त डेटा के आधार पर, इस प्रश्न का अत्यंत सटीक, प्रामाणिक और ज्योतिषीय उत्तर दें। 
-अपनी नई "Cloudflare AI Search" क्षमताओं (Web Search Grounding) का उपयोग करके गोचर और पंचांग की वर्तमान जानकारी खोजें और अपने उत्तर में सम्मिलित करें। 
+उपरोक्त डेटा और AI Search ज्ञानकोश के आधार पर, इस प्रश्न का अत्यंत सटीक, प्रामाणिक और ज्योतिषीय उत्तर दें। 
 उत्तर को हमेशा हिंदी में, सहायक और सकारात्मक (Empathetic & Positive) रखें।`;
 
     try {
-      // Use the Native Cloudflare Workers AI (Env.AI) Binding with new Search capabilities
       if (this.config.env?.AI) {
-        // Calling Cloudflare's flagship text-generation model with the new AI search built-in tools
-        const response = await this.config.env.AI.run('@cf/meta/llama-3-8b-instruct', {
-          messages: [
-            { role: 'system', content: 'You are an expert Vedic Astrologer.' },
-            { role: 'user', content: prompt }
-          ],
-          // Implementing the April 16 update native AI Search structure
-          tools: [{
-            name: "cloudflare_ai_search",
-            description: "Search the web for real-time astrological transits and rules.",
-            parameters: {
-              type: "object",
-              properties: { query: { type: "string" } },
-              required: ["query"]
-            }
-          }]
-        });
+        try {
+          const response = await this.config.env.AI.run('@cf/meta/llama-3-8b-instruct', {
+            messages: [
+              { role: 'system', content: 'You are an expert Vedic Astrologer.' },
+              { role: 'user', content: prompt }
+            ]
+          });
 
-        if (response && response.response) {
-            return response.response;
+          if (response && response.response) {
+              return response.response;
+          }
+        } catch (betaError) {
+          console.warn("Cloudflare Native AI encountered an error, falling back:", betaError);
+          return "क्षमा करें, AI मॉडल से उत्तर उत्पन्न करने में समस्या आई।";
         }
       }
 
-      return "क्षमा करें, Cloudflare AI Search (Native) उत्तर उत्पन्न नहीं कर सका।";
+      return "क्षमा करें, Cloudflare AI (Native) उत्तर उत्पन्न नहीं कर सका।";
     } catch (error) {
-      console.error("Cloudflare AI Search Error:", error);
-      return "Cloudflare Native AI Search के कनेक्शन में समस्या आई। कृपया बाद में प्रयास करें।";
+      console.error("Cloudflare AI Error:", error);
+      return "Cloudflare Native AI के कनेक्शन में समस्या आई (Beta)। कृपया बाद में प्रयास करें।";
     }
   }
 

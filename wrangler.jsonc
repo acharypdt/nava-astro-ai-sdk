@@ -24,6 +24,12 @@
   "ai": {
     "binding": "AI"
   },
+  "ai_search": [
+    {
+      "binding": "AI_SEARCH",
+      "id": "c1f7a8b9-c2d3-4e5f-a6b7-c8d9e0f1a2b3"
+    }
+  ],
   "vars": {
     "ENVIRONMENT": "production"
   }

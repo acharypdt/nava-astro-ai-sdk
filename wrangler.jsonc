@@ -17,7 +17,7 @@
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "nava_astro_db",
+      "database_name": "ai-astrology-sdk",
       "database_id": "4a617752-7bf1-48bd-80bb-0c99140daa0f"
     }
   ],

@@ -85,11 +85,11 @@ export default function AstroDashboard() {
             const aiSearchResult = await aiSearchRes.json() as any;
             
             if (aiSearchResult.answer) {
-              finalAIReport = `### 🔍 Cloudflare Native AI Search (Web Grounding)\n\n**प्रश्न:** ${formData.question}\n\n**उत्तर:**\n${aiSearchResult.answer}\n\n---\n\n` + finalAIReport;
+              finalAIReport = `### 🔍 Cloudflare Native AI Search (April 16 Update - BETA)\n\n**प्रश्न:** ${formData.question}\n\n**उत्तर:**\n${aiSearchResult.answer}\n\n---\n\n` + finalAIReport;
             }
           } catch (genErr) {
-            console.error("Cloudflare AI Error:", genErr);
-            finalAIReport = `### ❓ Cloudflare Native AI Search (ERROR)\n\n**प्रश्न:** ${formData.question}\n\n*(Cloudflare Native AI से उत्तर प्राप्त करने में तकनीकी समस्या हुई।)*\n\n---\n\n` + finalAIReport;
+            console.error("Cloudflare AI Search Error:", genErr);
+            finalAIReport = `### ❓ Cloudflare Native AI Search (BETA) - ERROR\n\n**प्रश्न:** ${formData.question}\n\n*(Cloudflare Native AI से उत्तर प्राप्त करने में तकनीकी समस्या हुई। क्योंकि यह फ़ीचर अभी Beta में है, यह कभी-कभी अनुपलब्ध हो सकता है।)*\n\n---\n\n` + finalAIReport;
           }
         } else {
            // Powerful Custom SDK Heuristic Response (Offline/No-AI mode)

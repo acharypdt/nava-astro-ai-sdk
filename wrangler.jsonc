@@ -24,12 +24,6 @@
   "ai": {
     "binding": "AI"
   },
-  "ai_search": [
-    {
-      "binding": "AI_SEARCH",
-      "instance_name": "yagya-ashram"
-    }
-  ],
   "vars": {
     "ENVIRONMENT": "production"
   }

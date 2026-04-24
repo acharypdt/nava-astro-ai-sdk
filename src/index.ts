@@ -5,11 +5,15 @@
  */
 
 import { NavaAstroSDK } from '../lib/astrology-sdk';
+// @ts-ignore
+import { EmailMessage } from 'cloudflare:email';
 
 export interface Env {
   DB: D1Database;
   PLATFORM_SECRETS: KVNamespace;
   AI: any;
+  AI_SEARCH: any;
+  SEND_EMAIL: any;
   CLOUDFLARE_ACCOUNT_ID?: string;
   CLOUDFLARE_API_TOKEN?: string;
   ENVIRONMENT: string;
@@ -28,6 +32,27 @@ async function handleGlobalError(error: any, context: string, env: Env) {
       .run();
   } catch (e) {
     console.warn("Failed to log error to D1", e);
+  }
+
+  // --- Send Email Notification using Cloudflare Email Workers ---
+  if (env.SEND_EMAIL) {
+    try {
+      const rawMsg = `Subject: Platform Error Alert - ${context}\n\n` +
+        `Context: ${context}\n\n` +
+        `Error: ${error?.message || error}\n\n` +
+        `Stack: ${error?.stack || 'N/A'}`;
+      
+      const email = new EmailMessage(
+        "info@navasanganakah.com",
+        "navasanganakah@gmail.com",
+        rawMsg
+      );
+      
+      await env.SEND_EMAIL.send(email);
+      console.log("Admin notified via email successfully.");
+    } catch (e) {
+      console.warn("Failed to send admin email notification", e);
+    }
   }
 
   return new Response("Internal Server Error", { status: 500, headers: { 'Content-Type': 'text/plain' } });

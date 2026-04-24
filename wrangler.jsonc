@@ -31,10 +31,7 @@
     {
       "binding": "SEND_EMAIL",
       "name": "SEND_EMAIL",
-      "destination_address": "navasanganakah@gmail.com",
-      "allowed_destination_addresses": [
-        "navasanganakah@gmail.com"
-      ]
+      "destination_address": "navasanganakah@gmail.com"
     }
   ]
 }

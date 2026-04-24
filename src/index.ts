@@ -5,8 +5,6 @@
  */
 
 import { NavaAstroSDK } from '../lib/astrology-sdk';
-// @ts-ignore
-import { EmailMessage } from 'cloudflare:email';
 
 export interface Env {
   DB: D1Database;
@@ -37,19 +35,19 @@ async function handleGlobalError(error: any, context: string, env: Env) {
   // --- Send Email Notification using Cloudflare Email Workers ---
   if (env.SEND_EMAIL) {
     try {
-      const rawMsg = `Subject: Platform Error Alert - ${context}\n\n` +
-        `Context: ${context}\n\n` +
+      const emailContent = `Context: ${context}\n\n` +
         `Error: ${error?.message || error}\n\n` +
         `Stack: ${error?.stack || 'N/A'}`;
       
-      const email = new EmailMessage(
-        "info@navasanganakah.com",
-        "navasanganakah@gmail.com",
-        rawMsg
-      );
+      const emailResponse = await env.SEND_EMAIL.send({
+        to: "navasanganakah@gmail.com",
+        from: "info@navasanganakah.com",
+        subject: `Platform Error Alert - ${context}`,
+        html: `<p>Context: ${context}</p><p>Error: ${error?.message || error}</p><pre>${error?.stack || 'N/A'}</pre>`,
+        text: emailContent,
+      });
       
-      await env.SEND_EMAIL.send(email);
-      console.log("Admin notified via email successfully.");
+      console.log("Admin notified via email successfully. MessageId:", emailResponse?.messageId);
     } catch (e) {
       console.warn("Failed to send admin email notification", e);
     }

@@ -10,7 +10,8 @@ export interface Env {
   DB: D1Database;
   PLATFORM_SECRETS: KVNamespace;
   AI: any;
-  AI_SEARCH: any;
+  CLOUDFLARE_ACCOUNT_ID?: string;
+  CLOUDFLARE_API_TOKEN?: string;
   ENVIRONMENT: string;
 }
 

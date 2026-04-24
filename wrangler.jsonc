@@ -29,9 +29,8 @@
   },
   "send_email": [
     {
-      "binding": "SEND_EMAIL",
       "name": "SEND_EMAIL",
-      "remote": true
+      "destination_address": "navasanganakah@gmail.com"
     }
   ]
 }

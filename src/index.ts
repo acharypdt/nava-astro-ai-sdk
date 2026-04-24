@@ -69,19 +69,6 @@ const worker = {
       }
     }
 
-    // --- Cloudflare AI Search Endpoint ---
-    if (url.pathname === '/api/ai-search' && request.method === 'POST') {
-      const body = await request.json() as any;
-      const sdk = new NavaAstroSDK({ env });
-      
-      const answer = await sdk.resolveQuestionWithAI(body.question, body.math_data);
-      
-      return Response.json({
-        success: true,
-        answer
-      });
-    }
-
     return new Response("Not Found", { status: 404 });
   }
 };
@@ -90,6 +77,19 @@ export default worker;
 
 async function handleApiRequest(request: Request, env: Env): Promise<Response> {
   const url = new URL(request.url);
+
+  // --- Cloudflare AI Search Endpoint ---
+  if (url.pathname === '/api/ai-search' && request.method === 'POST') {
+    const body = await request.json() as any;
+    const sdk = new NavaAstroSDK({ env });
+    
+    const answer = await sdk.resolveQuestionWithAI(body.question, body.math_data);
+    
+    return Response.json({
+      success: true,
+      answer
+    });
+  }
 
   // --- SDK Orchestration Endpoint ---
   if (url.pathname === '/api/astro-engine' && request.method === 'POST') {

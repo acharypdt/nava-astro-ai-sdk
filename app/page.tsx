@@ -24,6 +24,54 @@ import {
 } from 'lucide-react';
 import { NavaAstroSDK } from '@/lib/astrology-sdk';
 
+const ASTRO_GLOSSARY: Record<string, string> = {
+  'योग': 'योग (Yoga): ग्रहों का विशेष संयोजन जो जीवन के विभिन्न पहलुओं पर अनुकूल या प्रतिकूल प्रभाव डाल सकता है।',
+  'दोष': 'दोष (Dosha): अवांछनीय ग्रहों की स्थिति जो जीवन में चुनौतियां या बाधाएं उत्पन्न कर सकती है (जैसे मांगलिक दोष)।',
+  'राशि': 'राशि (Rasi/Zodiac Sign): आकाश का 30 डिग्री का हिस्सा, जो स्वभाव और व्यक्तित्व को प्रभावित करता है।',
+  'भाव': 'भाव (Bhava/House): कुण्डली के 12 खाने, जो जीवन के विभिन्न पहलुओं (जैसे धन, विवाह, करियर) को दर्शाते हैं।',
+  'लग्न': 'लग्न (Ascendant): जन्म के समय पूर्वी क्षितिज पर उदित होने वाली राशि, जो व्यक्तित्व व शरीर का प्रतिनिधित्व करती है।',
+  'महादशा': 'महादशा (Mahadasha): किसी विशिष्ट ग्रह के प्रभाव की लंबी अवधि, जो जीवन के महत्वपूर्ण चरणों को निर्धारित करती है।',
+  'नवमांश': 'नवमांश (D9 Chart): मुख्य कुण्डली का सूक्ष्म रूप, विशेषकर विवाह और व्यक्ति के आंतरिक स्वभाव को देखने के लिए प्रयुक्त।',
+  'दृष्टि': 'दृष्टि (Aspect): जब कोई ग्रह किसी अन्य भाव या ग्रह को अपनी ऊर्जा से प्रभावित करता है (देखता है)।',
+  'गोचर': 'गोचर (Transit): ग्रहों की वर्तमान आसमान में स्थिति का जन्म कुण्डली पर प्रभाव।',
+  'अंतर्दशा': 'अंतर्दशा (Antardasha): महादशा के अंतर्गत एक छोटी अवधि (उप-अवधि), जो अधिक सटीक समय बताती है।',
+  'नक्षत्र': 'नक्षत्र (Nakshatra): 27 तारा समूह जो चंद्रमा की स्थिति पर आधारित होते हैं और व्यक्तित्व व समय का गहरा विवरण देते हैं।',
+  'ग्रह': 'ग्रह (Graha): सूर्य, चंद्रमा, मंगल आदि जो व्यक्ति के कर्मों और भाग्य का संचालन करते हैं।',
+  'कुंडली': 'कुंडली (Kundli): जन्म के समय ग्रहों का आकाश में सटीक नक्शा।',
+  'कुण्डली': 'कुण्डली (Kundli): जन्म के समय ग्रहों का आकाश में सटीक नक्शा।'
+};
+
+function processGlossaryTerms(text: string): string {
+  if (!text) return text;
+  let processed = text;
+  const terms = Object.keys(ASTRO_GLOSSARY).sort((a, b) => b.length - a.length);
+  
+  terms.forEach(term => {
+    // Only replace outside of Markdown links/headers etc. 
+    // This regex ensures we only match whole words surrounded by space or punctuation.
+    const regex = new RegExp(`(^|\\s|[\\.,;:'"(\\[।\\-])(${term})(?=\\s|$|[\\.,;:'"\\]।\\-])`, 'gu');
+    processed = processed.replace(regex, `$1[$2](#glossary:$2)`);
+  });
+  
+  return processed;
+}
+
+const GlossaryTooltip = ({ term, children }: { term: string, children: React.ReactNode }) => {
+  const explanation = ASTRO_GLOSSARY[term] || 'Astrology term';
+  
+  return (
+    <span className="relative inline-block group cursor-help text-[#F27D26] border-b justify-center items-center border-dashed border-[#F27D26]/50 hover:bg-[#F27D26]/10 transition-colors rounded px-0.5">
+      {children}
+      <span className="absolute z-50 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 p-3 bg-[#111] text-[#E4E3E0] text-xs font-sans font-normal leading-relaxed text-left rounded-xl shadow-[0_0_40px_rgba(242,125,38,0.15)] border border-white/10 pointer-events-none">
+        {explanation}
+        <svg className="absolute text-[#111] h-3 w-4 left-1/2 -translate-x-1/2 top-full" x="0px" y="0px" viewBox="0 0 255 255" xmlSpace="preserve">
+          <polygon className="fill-current" points="0,0 127.5,127.5 255,0"/>
+        </svg>
+      </span>
+    </span>
+  );
+};
+
 export default function AstroDashboard() {
   const [loading, setLoading] = useState(false);
   const [report, setReport] = useState<any>(null);
@@ -440,7 +488,19 @@ export default function AstroDashboard() {
                     </div>
                     <div className="prose prose-invert prose-orange max-w-none prose-p:leading-relaxed prose-headings:font-medium prose-h2:text-[#F27D26] prose-h3:text-orange-300">
                       <div className="markdown-body">
-                        <ReactMarkdown>{report.analysis.aiReport}</ReactMarkdown>
+                        <ReactMarkdown
+                          components={{
+                            a: ({ node, ...props }) => {
+                              if (props.href && props.href.startsWith('#glossary:')) {
+                                const term = decodeURIComponent(props.href.replace('#glossary:', ''));
+                                return <GlossaryTooltip term={term}>{props.children}</GlossaryTooltip>;
+                              }
+                              return <a {...props} />;
+                            }
+                          }}
+                        >
+                          {processGlossaryTerms(report.analysis.aiReport)}
+                        </ReactMarkdown>
                       </div>
                     </div>
                   </div>

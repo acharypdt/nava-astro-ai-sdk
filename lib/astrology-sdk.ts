@@ -140,9 +140,10 @@ ${JSON.stringify(data.houseLords)}
         try {
           const response = await this.config.env.AI.run('@cf/meta/llama-3-8b-instruct', {
             messages: [
-              { role: 'system', content: 'You are an expert Vedic Astrologer.' },
+              { role: 'system', content: 'You are an expert Vedic Astrologer. You must ALWAYS respond in Hindi (हिंदी). Provide a very detailed, deep and comprehensive astrological analysis.' },
               { role: 'user', content: prompt }
-            ]
+            ],
+            max_tokens: 2048
           });
 
           if (response && response.response) {

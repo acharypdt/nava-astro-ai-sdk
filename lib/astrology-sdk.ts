@@ -80,43 +80,23 @@ export class NavaAstroSDK {
     let searchContext = "";
 
     try {
-       // Step 1: Query the Managed AI Search Service (via REST API to avoid Binding Errors)
-       const accountId = this.config.env?.CLOUDFLARE_ACCOUNT_ID;
-       const apiToken = this.config.env?.CLOUDFLARE_API_TOKEN;
-       
-       if (accountId && apiToken) {
+       if (this.config.env?.AI_SEARCH) {
            try {
-               const indexName = "yagya-ashram";
-               const url = `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai-search/indexes/${indexName}/query`;
+               const searchResults = await this.config.env.AI_SEARCH.query(question);
                
-               const searchRes = await fetch(url, {
-                  method: 'POST',
-                  headers: {
-                    'Authorization': `Bearer ${apiToken}`,
-                    'Content-Type': 'application/json'
-                  },
-                  body: JSON.stringify({ text: question })
-               });
-
-               if (searchRes.ok) {
-                 const searchResults = await searchRes.json() as any;
-                 
-                 // Format the retrieved documents/snippets as context
-                 if (searchResults && searchResults.result && searchResults.result.length > 0) {
-                   searchContext = "\n\n[Cloudflare AI Search: Indexed Knowledge]\n";
-                   searchResults.result.slice(0, 3).forEach((res: any) => {
-                      searchContext += `- ${res.text || res.content || JSON.stringify(res)}\n`;
-                   });
-                   searchContext += "[/Cloudflare AI Search]\n";
-                 }
-               } else {
-                 console.warn("AI Search REST API Error:", await searchRes.text());
+               // Format the retrieved documents/snippets as context
+               // Check if the property is 'results' or 'result' as per previous fallback
+               const docs = searchResults?.results || searchResults?.result || [];
+               if (docs.length > 0) {
+                 searchContext = "\n\n[Cloudflare AI Search: Indexed Knowledge]\n";
+                 docs.slice(0, 3).forEach((res: any) => {
+                    searchContext += `- ${res.text || res.content || JSON.stringify(res)}\n`;
+                 });
+                 searchContext += "[/Cloudflare AI Search]\n";
                }
            } catch (idxErr) {
-               console.warn("Could not query Cloudflare AI Search via REST:", idxErr);
+               console.warn("Could not query Cloudflare AI Search Index (Beta/Not Indexed):", idxErr);
            }
-       } else {
-           console.warn("CLOUDFLARE_ACCOUNT_ID or CLOUDFLARE_API_TOKEN not set for AI Search REST.");
        }
     } catch (e) {
        console.warn("AI Search setup issue:", e);

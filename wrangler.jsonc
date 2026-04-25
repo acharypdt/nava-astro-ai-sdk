@@ -29,7 +29,7 @@
   },
   "send_email": [
     {
-      "name": "SEND_EMAIL",
+      "name": "EMAIL",
       "destination_address": "navasanganakah@gmail.com"
     }
   ]

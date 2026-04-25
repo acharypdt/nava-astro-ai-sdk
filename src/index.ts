@@ -5,13 +5,15 @@
  */
 
 import { NavaAstroSDK } from '../lib/astrology-sdk';
+// @ts-ignore
+import { EmailMessage } from 'cloudflare:email';
 
 export interface Env {
   DB: D1Database;
   PLATFORM_SECRETS: KVNamespace;
   AI: any;
   AI_SEARCH: any;
-  SEND_EMAIL: any;
+  EMAIL: any;
   CLOUDFLARE_ACCOUNT_ID?: string;
   CLOUDFLARE_API_TOKEN?: string;
   ENVIRONMENT: string;
@@ -33,21 +35,35 @@ async function handleGlobalError(error: any, context: string, env: Env) {
   }
 
   // --- Send Email Notification using Cloudflare Email Workers ---
-  if (env.SEND_EMAIL) {
+  if (env.EMAIL) {
     try {
       const emailContent = `Context: ${context}\n\n` +
         `Error: ${error?.message || error}\n\n` +
         `Stack: ${error?.stack || 'N/A'}`;
       
-      const emailResponse = await env.SEND_EMAIL.send({
-        to: "navasanganakah@gmail.com",
-        from: "info@navasanganakah.com",
-        subject: `Platform Error Alert - ${context}`,
-        html: `<p>Context: ${context}</p><p>Error: ${error?.message || error}</p><pre>${error?.stack || 'N/A'}</pre>`,
-        text: emailContent,
-      });
+      const to = "navasanganakah@gmail.com";
+      const subject = `Platform Error Alert - ${context}`;
+      const from = "Yagya Ashram <info@navasanganakah.com>";
+      const replyTo = "info@navasanganakah.com";
       
-      console.log("Admin notified via email successfully. MessageId:", emailResponse?.messageId);
+      const mime = [
+        `From: ${from}`,
+        `To: ${to}`,
+        `Reply-To: ${replyTo}`,
+        `Subject: ${subject}`,
+        `Content-Type: text/plain; charset="utf-8"`,
+        "",
+        emailContent
+      ].join('\r\n');
+
+      const message = new EmailMessage(
+        "info@navasanganakah.com",
+        to,
+        mime
+      );
+      
+      await env.EMAIL.send(message);
+      console.log(`Cloudflare Email sent successfully to ${to}`);
     } catch (e) {
       console.warn("Failed to send admin email notification", e);
     }

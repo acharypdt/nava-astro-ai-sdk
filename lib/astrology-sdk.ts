@@ -133,14 +133,14 @@ ${JSON.stringify(data.houseLords)}
 उपयोगकर्ता का विशेष प्रश्न है: "${question}"
 
 उपरोक्त डेटा और AI Search ज्ञानकोश के आधार पर, इस प्रश्न का अत्यंत सटीक, प्रामाणिक और ज्योतिषीय उत्तर दें। 
-उत्तर को हमेशा हिंदी में, सहायक और सकारात्मक (Empathetic & Positive) रखें।`;
+ध्यान दें: पूरा उत्तर केवल और केवल हिंदी (Hindi) भाषा में ही लिखें। अंग्रेजी या किसी अन्य भाषा का प्रयोग बिल्कुल न करें। उत्तर को सहायक और सकारात्मक (Empathetic & Positive) रखें।`;
 
     try {
       if (this.config.env?.AI) {
         try {
           const response = await this.config.env.AI.run('@cf/meta/llama-3-8b-instruct', {
             messages: [
-              { role: 'system', content: 'You are an expert Vedic Astrologer. You must ALWAYS respond in Hindi (हिंदी). Provide a very detailed, deep and comprehensive astrological analysis.' },
+              { role: 'system', content: 'You are an expert Vedic Astrologer. CRITICAL RULE: You MUST write your ENTIRE response exclusively in the Hindi language (Devanagari script). NEVER use English words. Provide a very detailed, deep and comprehensive astrological analysis in Hindi.' },
               { role: 'user', content: prompt }
             ],
             max_tokens: 2048

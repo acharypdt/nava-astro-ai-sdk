@@ -75,6 +75,7 @@ const GlossaryTooltip = ({ term, children }: { term: string, children: React.Rea
 export default function AstroDashboard() {
   const [loading, setLoading] = useState(false);
   const [report, setReport] = useState<any>(null);
+  const [muhurtaResults, setMuhurtaResults] = useState<any[]>([]);
   const [formData, setFormData] = useState({
     name: "उदाहरण उपयोगकर्ता",
     gender: "Male",
@@ -87,18 +88,20 @@ export default function AstroDashboard() {
     lat: 23.91,
     lng: 76.91,
     timezone: 5.5,
-    report_type: "सामान्य",
+    report_type: "General",
     question: "",
-    useAI: true
+    useAI: true,
+    findMuhurtas: false,
+    muhurtaRange: 24,
+    muhurtaStep: 30
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    
+    setMuhurtaResults([]);
+
     try {
-      // PROD RULE: Zero API Calls for core calculation
-      // We run the NavaAstroSDK directly in the browser.
       const sdk = new NavaAstroSDK();
       const analysis = await sdk.analyze({
         year: formData.year,
@@ -115,38 +118,61 @@ export default function AstroDashboard() {
         ayanamsa: 'LAHIRI'
       });
 
+      let muhurtaInfo: any[] = [];
+      if (formData.findMuhurtas) {
+        muhurtaInfo = await sdk.findMuhurtas({
+          year: formData.year,
+          month: formData.month,
+          day: formData.day,
+          hour: formData.hour,
+          minute: formData.minute,
+          lat: formData.lat,
+          lng: formData.lng,
+          timezone: formData.timezone,
+          ayanamsa: 'LAHIRI',
+          gender: formData.gender,
+          birthLocation: formData.location,
+          report_type: formData.report_type
+        }, {
+          rangeHours: formData.muhurtaRange,
+          stepMinutes: formData.muhurtaStep,
+          top: 5
+        });
+      }
+
+      setMuhurtaResults(muhurtaInfo);
+
       let finalAIReport = analysis.aiReport;
 
-      // Question handling
       if (formData.question && formData.question.trim().length > 0) {
         if (formData.useAI) {
-          // CALL CLOUDFLARE AI SEARCH (Backend Unified Engine)
           try {
             const aiSearchRes = await fetch('/api/ai-search', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 question: formData.question,
-                math_data: analysis.math
+                math_data: analysis.math,
+                muhurta_results: muhurtaInfo
               })
             });
             const aiSearchResult = await aiSearchRes.json() as any;
-            
+
             if (aiSearchResult.answer) {
               finalAIReport = `### 🔍 Cloudflare Native AI Search (April 16 Update - BETA)\n\n**प्रश्न:** ${formData.question}\n\n**उत्तर:**\n${aiSearchResult.answer}\n\n---\n\n` + finalAIReport;
+            } else {
+              finalAIReport = `### 🔍 Cloudflare Native AI Search (April 16 Update - BETA)\n\n**प्रश्न:** ${formData.question}\n\n*(AI ने उत्तर नहीं भेजा। कृपया पुनः प्रयास करें।)*\n\n---\n\n` + finalAIReport;
             }
           } catch (genErr) {
-            console.error("Cloudflare AI Search Error:", genErr);
+            console.error('Cloudflare AI Search Error:', genErr);
             finalAIReport = `### ❓ Cloudflare Native AI Search (BETA) - ERROR\n\n**प्रश्न:** ${formData.question}\n\n*(Cloudflare Native AI से उत्तर प्राप्त करने में तकनीकी समस्या हुई। क्योंकि यह फ़ीचर अभी Beta में है, यह कभी-कभी अनुपलब्ध हो सकता है।)*\n\n---\n\n` + finalAIReport;
           }
         } else {
-           // Powerful Custom SDK Heuristic Response (Offline/No-AI mode)
-           const hAnswer = sdk.resolveQuestionHeuristically(formData.question, analysis.math);
-           finalAIReport = `### 🔍 आपके प्रश्न का उत्तर (Custom SDK: ON)\n\n${hAnswer}\n\n---\n\n` + finalAIReport;
+          const hAnswer = sdk.resolveQuestionHeuristically(formData.question, analysis.math);
+          finalAIReport = `### 🔍 आपके प्रश्न का उत्तर (Custom SDK: ON)\n\n${hAnswer}\n\n---\n\n` + finalAIReport;
         }
       }
 
-      // Align with the standardized 'AnalysisResult' structure
       setReport({
         math: analysis.math,
         analysis: {
@@ -155,8 +181,7 @@ export default function AstroDashboard() {
         }
       });
     } catch (err: any) {
-      console.error("Local Analysis Error:", err);
-      // Fallback for visual demo if something breaks locally
+      console.error('Local Analysis Error:', err);
       setReport({
         math: {
           planets: {
@@ -166,8 +191,8 @@ export default function AstroDashboard() {
           houses: {}
         },
         analysis: {
-          activeRules: [{ name: "System Error", category: "Engine" }],
-          aiReport: "Local calculation failed. Please check console."
+          activeRules: [{ name: 'System Error', category: 'Engine' }],
+          aiReport: 'Local calculation failed. Please check console.'
         }
       });
     } finally {
@@ -355,6 +380,39 @@ export default function AstroDashboard() {
               </div>
 
               <div className="flex items-center gap-3 bg-white/5 p-3 rounded-lg border border-white/5 cursor-pointer select-none"
+                   onClick={() => setFormData({...formData, findMuhurtas: !formData.findMuhurtas})}>
+                <div className={`w-10 h-5 rounded-full transition-colors relative ${formData.findMuhurtas ? 'bg-[#F27D26]' : 'bg-gray-600'}`}>
+                  <motion.div 
+                    animate={{ x: formData.findMuhurtas ? 22 : 2 }}
+                    className="absolute top-1 w-3 h-3 bg-white rounded-full"
+                  />
+                </div>
+                <span className="text-xs font-mono uppercase tracking-wider">मुहूर्त खोजें</span>
+                <Sparkles className={`w-4 h-4 ${formData.findMuhurtas ? 'text-[#F27D26]' : 'text-gray-600'}`} />
+              </div>
+
+              {formData.findMuhurtas && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-[10px] uppercase tracking-wider opacity-50 block">स्कैन अवधि (घंटे)</label>
+                    <input type="number" step="1"
+                      value={formData.muhurtaRange}
+                      onChange={e => setFormData({...formData, muhurtaRange: parseInt(e.target.value) || 24})}
+                      className="w-full bg-black/40 border border-white/10 rounded-lg py-3 px-4"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] uppercase tracking-wider opacity-50 block">स्टेप (मिनट)</label>
+                    <input type="number" step="5"
+                      value={formData.muhurtaStep}
+                      onChange={e => setFormData({...formData, muhurtaStep: parseInt(e.target.value) || 30})}
+                      className="w-full bg-black/40 border border-white/10 rounded-lg py-3 px-4"
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div className="flex items-center gap-3 bg-white/5 p-3 rounded-lg border border-white/5 cursor-pointer select-none"
                    onClick={() => setFormData({...formData, useAI: !formData.useAI})}>
                 <div className={`w-10 h-5 rounded-full transition-colors relative ${formData.useAI ? 'bg-[#F27D26]' : 'bg-gray-600'}`}>
                   <motion.div 
@@ -479,6 +537,30 @@ export default function AstroDashboard() {
                       ))}
                     </div>
                   </div>
+
+                  {muhurtaResults.length > 0 && (
+                    <div>
+                      <div className="flex items-center gap-2 mb-6 border-b border-white/10 pb-4">
+                        <Heart className="w-5 h-5 text-[#F27D26]" />
+                        <h3 className="text-sm font-mono tracking-widest uppercase">मुहूर्त चयनित समय</h3>
+                      </div>
+                      <div className="grid gap-4">
+                        {muhurtaResults.map((item, index) => (
+                          <div key={item.startISO} className="bg-white/5 p-4 rounded-2xl border border-white/10">
+                            <div className="flex justify-between items-center gap-4">
+                              <p className="text-sm font-semibold">#{index + 1} - {new Date(item.startISO).toLocaleString('hi-IN')}</p>
+                              <span className="text-xs uppercase tracking-widest opacity-60">स्कोर {item.score}</span>
+                            </div>
+                            <p className="mt-3 text-sm opacity-80">तिथि: {item.tithi}, नक्षत्र: {item.nakshatra} ({item.nakshatraName})</p>
+                            <div className="mt-3 text-xs text-[#F27D26] font-medium">कारण:</div>
+                            <ul className="mt-2 list-disc list-inside text-xs opacity-70 space-y-1">
+                              {item.reasons.map((reason: string) => <li key={reason}>{reason}</li>)}
+                            </ul>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
                   {/* AI Report */}
                   <div>

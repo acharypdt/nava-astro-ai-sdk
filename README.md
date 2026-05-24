@@ -1,41 +1,41 @@
-# 🌟 NavaAstro AI Platform
+# ?? NavaAstro AI Platform
 
-**नव-एस्ट्रो: Enterprise-Grade Vedic Astrology AI SDK & Platform**
+**??-???????: Enterprise-Grade Vedic Astrology AI SDK & Platform**
 
 An indigenous, autonomous AI-powered Vedic Astrology platform built on modern cloud infrastructure (Cloudflare Workers, D1, R2) with 100% dynamic rule evaluation and AI-driven chart interpretation.
 
 ---
 
-## 📋 About This Project
+## ?? About This Project
 
 **NavaAstro** is a revolutionary platform combining ancient Vedic astrological wisdom with cutting-edge artificial intelligence technology. This project provides:
 
-- **🔬 Precise Astronomical Calculations** - Birth chart (कुंडली) computation with sub-second accuracy
-- **🤖 AI-Powered Interpretation** - Heuristic and ML-based analysis of astrological patterns
-- **⚡ Headless JSON API** - RESTful endpoints for third-party integrations
-- **☁️ Serverless Architecture** - Built on Cloudflare Workers for global scalability
-- **📊 Dynamic Rule Engine** - Rule evaluation system supporting योग (yoga) and दोष (dosha) detection
-- **🌐 Multi-Language Support** - Sanskrit, Hindi, and English interfaces
+- **?? Precise Astronomical Calculations** - Birth chart (??????) computation with sub-second accuracy
+- **?? AI-Powered Interpretation** - Heuristic and model-driven analysis of astrological patterns
+- **? Headless JSON API** - RESTful endpoints for third-party integrations
+- **?? Serverless Architecture** - Built on Cloudflare Workers for global scalability
+- **?? Dynamic Rule Engine** - Rule evaluation system supporting ??? (yoga) and ??? (dosha) detection
+- **?? Multi-Language Support** - Sanskrit, Hindi, and English interfaces
 
-### 🎯 Core Capabilities
+### ?? Core Capabilities
 
-1. **Natal Chart Analysis (जन्म कुंडली विश्लेषण)**
+1. **Natal Chart Analysis (???? ?????? ????????)**
    - Birth time, location, and date-based chart calculation
    - 12-house analysis with planetary positions
    - Nakshatra and Rashi determination
-   - Ascendant (लग्न) and Dasha period computation
+   - Ascendant (????) and Dasha period computation
 
 2. **Astrological Pattern Detection**
-   - Yoga identification (राज योग, धन योग, etc.)
-   - Dosha detection (मांगलिक दोष, etc.)
-   - Aspect (दृष्टि) analysis and planetary relationships
-   - Transit (गोचर) impact assessment
+   - Yoga identification (??? ???, ?? ???, etc.)
+   - Dosha detection (??????? ???, etc.)
+   - Aspect (??????) analysis and planetary relationships
+   - Transit (????) impact assessment
 
 3. **AI-Driven Insights**
    - Question-based chart interpretation
    - Personalized astrological guidance
    - Contextual explanations of astrological concepts
-   - Glossary with 13+ Sanskrit/Hindi astrological terms
+   - Glossary with Sanskrit/Hindi astrological terms
 
 4. **API Integration**
    - Production-ready JSON API
@@ -45,22 +45,10 @@ An indigenous, autonomous AI-powered Vedic Astrology platform built on modern cl
 
 ---
 
-## 🏆 Credits & Sponsors
-
-**Project Creator:** [Acharya Pandit Dheerendra Tripathi](https://github.com/acharypdt)
-- Vedic Astrology Expert & AI Researcher
-- Vision: Indigenous AI solutions rooted in Vedic knowledge
-
-**Supporting Organizations:**
-- **NavaSanganakah Multiventures** - Business & Strategy Partner
-- **Yagya Ashram** - Vedic Knowledge & Validation Partner
-
----
-
-## 🚀 Quick Start
+## ?? Quick Start
 
 ### Prerequisites
-- Node.js 18+ 
+- Node.js 18+
 - npm or yarn
 - Gemini API key (for AI features)
 
@@ -98,36 +86,36 @@ An indigenous, autonomous AI-powered Vedic Astrology platform built on modern cl
 
 ---
 
-## 📦 Project Structure
+## ?? Project Structure
 
 ```
 navaastro/
-├── app/                      # Next.js App Router
-│   ├── page.tsx              # Main dashboard UI
-│   ├── layout.tsx            # Root layout with metadata
-│   ├── api/                  # API routes (astrology endpoints)
-│   └── applet/               # Reusable UI components
-│
-├── lib/                      # Core SDK & Logic
-│   ├── astrology-sdk.ts      # Main SDK class (analyze, resolveQuestion)
-│   ├── astro-core.ts         # Astronomical calculations
-│   ├── evaluator.ts          # Rule evaluation engine
-│   └── utils.ts              # Utility functions
-│
-├── hooks/                    # React custom hooks
-├── migrations/               # Database migrations (D1)
-│
-├── next.config.ts            # Next.js configuration
-├── tsconfig.json             # TypeScript configuration
-├── tailwind.config.js        # Tailwind CSS setup
-├── wrangler.jsonc            # Cloudflare Workers config
-│
-└── README.md                 # This file
++-- app/                      # Next.js App Router
+�   +-- page.tsx              # Main dashboard UI
+�   +-- layout.tsx            # Root layout with metadata
+�   +-- api/                  # API routes (astrology endpoints)
+�   +-- applet/               # Reusable UI components
+�
++-- lib/                      # Core SDK & Logic
+�   +-- astrology-sdk.ts      # Main SDK class (analyze, resolveQuestion)
+�   +-- astro-core.ts         # Astronomical calculations
+�   +-- evaluator.ts          # Rule evaluation engine
+�   +-- utils.ts              # Utility functions
+�
++-- hooks/                    # React custom hooks
++-- migrations/               # Database migrations (D1)
+�
++-- next.config.ts            # Next.js configuration
++-- tsconfig.json             # TypeScript configuration
++-- tailwind.config.js        # Tailwind CSS setup
++-- wrangler.jsonc            # Cloudflare Workers config
+�
++-- README.md                 # This file
 ```
 
 ---
 
-## 🛠️ Tech Stack
+## ??? Tech Stack
 
 ### Frontend
 - **Framework:** Next.js 15 (React 19)
@@ -157,7 +145,7 @@ navaastro/
 
 ---
 
-## 📚 SDK Usage
+## ?? SDK Usage
 
 ### Basic Chart Analysis
 
@@ -198,7 +186,7 @@ console.log(answer);
 
 ---
 
-## 📖 API Endpoints
+## ?? API Endpoints
 
 ### POST `/api/astro-engine`
 Analyze a birth chart and get astrological insights.
@@ -232,7 +220,67 @@ Analyze a birth chart and get astrological insights.
 
 ---
 
-## 🔧 Development
+## ?? Muhurta Support
+
+This project now supports offline muhurta (auspicious time) recommendations directly from the SDK and through the API.
+
+### SDK Usage
+
+```ts
+import { NavaAstroSDK } from '@/lib/astrology-sdk';
+
+const sdk = new NavaAstroSDK();
+const results = await sdk.findMuhurtas({
+  year: 1990,
+  month: 1,
+  day: 1,
+  hour: 6,
+  minute: 0,
+  lat: 28.6139,
+  lng: 77.2090,
+  timezone: 5.5,
+  ayanamsa: 'LAHIRI',
+  gender: 'Male',
+  birthLocation: 'Delhi, India',
+  report_type: 'General'
+}, {
+  rangeHours: 24,
+  stepMinutes: 30,
+  top: 5
+});
+
+console.log(results);
+```
+
+### API Usage
+
+POST `/api/astro-engine/muhurta`
+
+```bash
+curl -X POST http://localhost:3000/api/astro-engine/muhurta \
+  -H "Content-Type: application/json" \
+  -d '{
+    "birth_data": {
+      "year":1990,
+      "month":1,
+      "day":1,
+      "hour":6,
+      "minute":0,
+      "lat":28.6139,
+      "lng":77.2090,
+      "timezone":5.5
+    },
+    "options": {
+      "rangeHours": 24,
+      "stepMinutes": 30,
+      "top": 5
+    }
+  }'
+```
+
+---
+
+## ?? Development
 
 ### Running Tests
 ```bash
@@ -257,7 +305,7 @@ npm run clean
 
 ---
 
-## 🌍 Deployment
+## ?? Deployment
 
 ### Deploy to Cloudflare Workers
 
@@ -273,7 +321,7 @@ vercel deploy
 
 ---
 
-## 📝 Environment Variables
+## ?? Environment Variables
 
 Create a `.env.local` file with:
 
@@ -289,29 +337,29 @@ DATABASE_URL=your_database_url
 
 ---
 
-## 🎓 Astrological Concepts Reference
+## ?? Astrological Concepts Reference
 
 The platform uses authentic Vedic astrology terminology:
 
-- **कुंडली (Kundli):** Birth chart showing planetary positions
-- **लग्न (Ascendant):** Rising sign at birth time
-- **राशि (Rasi):** Zodiac sign (30° segments)
-- **भाव (Bhava):** House system (12 divisions of life)
-- **नक्षत्र (Nakshatra):** 27 lunar mansions
-- **योग (Yoga):** Auspicious planetary combinations
-- **दोष (Dosha):** Inauspicious planetary combinations
-- **महादशा (Mahadasha):** Major planetary periods
-- **गोचर (Transit):** Current planetary movements
+- **?????? (Kundli):** Birth chart showing planetary positions
+- **???? (Ascendant):** Rising sign at birth time
+- **???? (Rasi):** Zodiac sign (30� segments)
+- **??? (Bhava):** House system (12 divisions of life)
+- **??????? (Nakshatra):** 27 lunar mansions
+- **??? (Yoga):** Auspicious planetary combinations
+- **??? (Dosha):** Inauspicious planetary combinations
+- **?????? (Mahadasha):** Major planetary periods
+- **???? (Transit):** Current planetary movements
 
 ---
 
-## 📄 License
+## ?? License
 
 This project is proprietary software developed by Acharya Pandit Dheerendra Tripathi in collaboration with NavaSanganakah Multiventures and Yagya Ashram.
 
 ---
 
-## 📞 Support & Contact
+## ?? Support & Contact
 
 For questions, feature requests, or collaborations:
 
@@ -321,7 +369,7 @@ For questions, feature requests, or collaborations:
 
 ---
 
-## 🙏 Acknowledgments
+## ?? Acknowledgments
 
 This platform stands on the shoulders of:
 - Ancient Vedic astrological knowledge
@@ -331,4 +379,4 @@ This platform stands on the shoulders of:
 
 ---
 
-**Built with ❤️ by Acharya Pandit Dheerendra Tripathi & Team**
+**Built with ?? by Acharya Pandit Dheerendra Tripathi & Team**

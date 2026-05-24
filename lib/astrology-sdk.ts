@@ -7,6 +7,7 @@
 
 import { calculateChart, CalculationParams } from './astro-core';
 import { evaluateRule, AstroChartData, RuleAST } from './evaluator';
+import { findMuhurtas, MuhurtaRequest, MuhurtaResult } from './muhurat';
 
 export interface SDKConfig {
   apiKey?: string;
@@ -75,7 +76,7 @@ export class NavaAstroSDK {
    * AI-based Question Resolution using Cloudflare Workers AI + Managed AI Search
    * Updated to leverage the April 16 Cloudflare "AI Search" Managed RAG Service.
    */
-  async resolveQuestionWithAI(question: string, data: AstroChartData): Promise<string> {
+  async resolveQuestionWithAI(question: string, data: AstroChartData, muhurtaDetails?: MuhurtaResult[]): Promise<string> {
     
     let searchContext = "";
 
@@ -123,16 +124,23 @@ export class NavaAstroSDK {
        console.warn("AI Search setup issue:", e);
     }
 
-    const prompt = `तुम एक प्रकांड वैदिक ज्योतिषी हो। नीचे दी गई कुण्डली विश्लेषण रिपोर्ट को ध्यान से पढ़ें:
+    let muhurtaContext = "";
+    if (muhurtaDetails && muhurtaDetails.length > 0) {
+      muhurtaContext = "\n\n[मुहूर्त विवरण]\n" + muhurtaDetails.slice(0, 5).map((item, index) => {
+        return `${index + 1}. समय: ${item.startISO}, तिथि: ${item.tithi}, नक्षत्र: ${item.nakshatra} (${item.nakshatraName}), स्कोर: ${item.score}`;
+      }).join("\n") + "\n[/मुहूर्त विवरण]\n";
+    }
+
+    const prompt = `तुम एक प्रकांड वैदिक ज्योतिषी हो। नीचे दी गई कुण्डली विश्लेषण रिपोर्ट और मुहूर्त विवरण को ध्यान से पढ़ें:
 
 [कुण्डली डेटा]
 ${JSON.stringify(data.planets)}
 ${JSON.stringify(data.houseLords)}
-[/कुण्डली डेटा]${searchContext}
+[/कुण्डली डेटा]${muhurtaContext}${searchContext}
 
 उपयोगकर्ता का विशेष प्रश्न है: "${question}"
 
-उपरोक्त डेटा और AI Search ज्ञानकोश के आधार पर, इस प्रश्न का अत्यंत सटीक, प्रामाणिक और ज्योतिषीय उत्तर दें। 
+उपरोक्त डेटा, मुहूर्त विवरण और AI Search ज्ञानकोश के आधार पर, इस प्रश्न का अत्यंत सटीक, प्रामाणिक और ज्योतिषीय उत्तर दें। 
 ध्यान दें: पूरा उत्तर केवल और केवल हिंदी (Hindi) भाषा में ही लिखें। अंग्रेजी या किसी अन्य भाषा का प्रयोग बिल्कुल न करें। उत्तर को सहायक और सकारात्मक (Empathetic & Positive) रखें।`;
 
     try {
@@ -683,6 +691,14 @@ ${JSON.stringify(data.houseLords)}
     report += "*(यह विवरण NavaAstro के ऑटोनॉमस गणितीय इंजन द्वारा D1, D9, गोचर और महादशा के आधार पर स्वचालित रूप से तैयार किया गया है।)*";
     
     return report;
+  }
+
+  /**
+   * Find Muhurtas (Auspicious time slots) by scanning nearby slots and returning ranked candidates.
+   */
+  async findMuhurtas(baseParams: CalculationParams & { report_type?: string }, opts: MuhurtaRequest = {}): Promise<MuhurtaResult[]> {
+    // Delegate to the muhurat module (local offline computation)
+    return await findMuhurtas(baseParams, opts);
   }
 
   /**

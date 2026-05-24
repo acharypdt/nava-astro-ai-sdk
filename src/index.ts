@@ -99,7 +99,7 @@ async function handleApiRequest(request: Request, env: Env): Promise<Response> {
     const body = await request.json() as any;
     const sdk = new NavaAstroSDK({ env });
     
-    const answer = await sdk.resolveQuestionWithAI(body.question, body.math_data);
+    const answer = await sdk.resolveQuestionWithAI(body.question, body.math_data, body.muhurta_results || []);
     
     return Response.json({
       success: true,
@@ -107,7 +107,7 @@ async function handleApiRequest(request: Request, env: Env): Promise<Response> {
     });
   }
 
-  // --- SDK Orchestration Endpoint ---
+  // --- SDK Orchestration Endpoint (Analysis) ---
   if (url.pathname === '/api/astro-engine' && request.method === 'POST') {
     const body = await request.json() as any;
     
@@ -131,6 +131,27 @@ async function handleApiRequest(request: Request, env: Env): Promise<Response> {
           aiReport: analysis.aiReport
         }
       }
+    });
+  }
+
+  // --- Muhurta Finder Endpoint ---
+  if (url.pathname === '/api/astro-engine/muhurta' && request.method === 'POST') {
+    const body = await request.json() as any;
+    const sdk = new NavaAstroSDK({ env });
+
+    // body.birth_data must contain date/time and location fields
+    const base = {
+      ...body.birth_data,
+      ayanamsa: body.config?.ayanamsa || 'LAHIRI'
+    };
+
+    const results = await sdk.findMuhurtas(base, body.options || {});
+
+    return Response.json({
+      success: true,
+      sdk_version: "4.2.0-stable",
+      muhurta_count: results.length,
+      results
     });
   }
 

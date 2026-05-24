@@ -9,6 +9,7 @@ import { handleFindMuhurta } from './routes/muhurta';
 import { handleGetProfile, handleUpdateProfile, handleGetUsage, handleGetHistory } from './routes/user';
 import { handleAskAI } from './routes/ai';
 import { handleHealthCheck } from './routes/health';
+import { handleCreateOrder, handleVerifyPayment, handleGetSubscription, handleCancelSubscription, handleWebhook } from './routes/billing';
 import { success, error, notFound } from './lib/response';
 
 export interface Env {
@@ -20,6 +21,9 @@ export interface Env {
   CLOUDFLARE_ACCOUNT_ID?: string;
   CLOUDFLARE_API_TOKEN?: string;
   ENVIRONMENT: string;
+  RAZORPAY_KEY_ID?: string;
+  RAZORPAY_KEY_SECRET?: string;
+  RAZORPAY_WEBHOOK_SECRET?: string;
 }
 
 type RouteHandler = (request: Request, env: Env, ...args: string[]) => Promise<Response>;
@@ -59,6 +63,13 @@ const routes: Route[] = [
   // API Keys
   { method: 'POST', path: '/api/v1/auth/api-keys', handler: handleCreateApiKey, requireAuth: true },
   { method: 'GET', path: '/api/v1/auth/api-keys', handler: handleListApiKeys, requireAuth: true },
+
+  // Billing
+  { method: 'POST', path: '/api/v1/billing/create-order', handler: handleCreateOrder, requireAuth: true },
+  { method: 'POST', path: '/api/v1/billing/verify', handler: handleVerifyPayment, requireAuth: true },
+  { method: 'GET', path: '/api/v1/billing/subscription', handler: handleGetSubscription, requireAuth: true },
+  { method: 'POST', path: '/api/v1/billing/cancel', handler: handleCancelSubscription, requireAuth: true },
+  { method: 'POST', path: '/api/v1/billing/webhook', handler: handleWebhook, requireAuth: false },
 ];
 
 function matchRoute(url: URL, method: string): { route: Route; params: Record<string, string> } | null {

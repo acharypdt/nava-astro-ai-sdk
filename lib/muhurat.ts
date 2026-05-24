@@ -39,6 +39,49 @@ function computeNakshatra(moonLon: number): number {
   return (idx % 27) + 1; // 1..27
 }
 
+/**
+ * Build CalculationParams from a local wall-clock time + timezone offset.
+ * Converts local date/time components directly into parameters for calculateChart.
+ */
+function buildParamsFromLocalTime(
+  localYear: number,
+  localMonth: number,
+  localDay: number,
+  localHour: number,
+  localMinute: number,
+  tz: number,
+  baseParams: CalculationParams
+): CalculationParams {
+  // Construct local timestamp directly (no UTC conversion issues)
+  // The local date/time is the birth time in the user's timezone.
+  // convert to UTC: subtract timezone offset
+  const localTimestamp = new Date(localYear, localMonth - 1, localDay, localHour, localMinute).getTime();
+  const utcTimestamp = localTimestamp - tz * 3600000;
+  const utcDate = new Date(utcTimestamp);
+
+  return {
+    year: utcDate.getUTCFullYear(),
+    month: utcDate.getUTCMonth() + 1,
+    day: utcDate.getUTCDate(),
+    hour: utcDate.getUTCHours(),
+    minute: utcDate.getUTCMinutes(),
+    lat: baseParams.lat,
+    lng: baseParams.lng,
+    timezone: tz,
+    ayanamsa: baseParams.ayanamsa || 'LAHIRI',
+    gender: baseParams.gender,
+    birthLocation: baseParams.birthLocation
+  };
+}
+
+/**
+ * Get the local wall-clock hour from a UTC timestamp + timezone offset.
+ */
+function getLocalHour(utcMs: number, tz: number): number {
+  const localMs = utcMs + tz * 3600000;
+  return new Date(localMs).getUTCHours();
+}
+
 export async function findMuhurtas(baseParams: CalculationParams, opts: MuhurtaRequest = {}): Promise<MuhurtaResult[]> {
   const rangeHours = opts.rangeHours ?? 24;
   const stepMinutes = opts.stepMinutes ?? 30;
@@ -46,32 +89,37 @@ export async function findMuhurtas(baseParams: CalculationParams, opts: MuhurtaR
   const preferNak = opts.preferNakshatras ?? DEFAULT_FAVORABLE_NAKSHATRAS;
   const avoidTithis = opts.avoidTithis ?? DEFAULT_AVOID_TITHIS;
 
-  // Build starting Date in local (using provided params and timezone)
+  // The baseParams contain birth date/time in the user's timezone
   const tz = baseParams.timezone !== undefined ? baseParams.timezone : 5.5;
-  const startLocal = new Date(Date.UTC(baseParams.year, baseParams.month - 1, baseParams.day, baseParams.hour || 0, baseParams.minute || 0));
-  // adjust for timezone back to local wall-clock
-  const startMs = startLocal.getTime() - tz * 3600000;
+  
+  // Get the start timestamp (local) as a numeric timestamp
+  const startLocalTimestamp = new Date(
+    baseParams.year,
+    baseParams.month - 1,
+    baseParams.day,
+    baseParams.hour || 0,
+    baseParams.minute || 0
+  ).getTime();
+
+  // Convert to UTC for iteration
+  const startUtc = startLocalTimestamp - tz * 3600000;
 
   const slots: MuhurtaResult[] = [];
   const samples = Math.ceil((rangeHours * 60) / stepMinutes);
 
   for (let i = 0; i < samples; i++) {
-    const slotMs = startMs + i * stepMinutes * 60000;
-    const slotDate = new Date(slotMs + tz * 3600000); // convert back to UTC-based params
+    // Each slot is at UTC timestamp + offset
+    const slotUtcMs = startUtc + i * stepMinutes * 60000;
+    // The corresponding local wall-clock time is slotUtcMs + tz offset
+    const localDt = new Date(slotUtcMs + tz * 3600000);
+    
+    const localYear = localDt.getUTCFullYear();
+    const localMonth = localDt.getUTCMonth() + 1;
+    const localDay = localDt.getUTCDate();
+    const localHour = localDt.getUTCHours();
+    const localMinute = localDt.getUTCMinutes();
 
-    const params: CalculationParams = {
-      year: slotDate.getUTCFullYear(),
-      month: slotDate.getUTCMonth() + 1,
-      day: slotDate.getUTCDate(),
-      hour: slotDate.getUTCHours(),
-      minute: slotDate.getUTCMinutes(),
-      lat: baseParams.lat,
-      lng: baseParams.lng,
-      timezone: tz,
-      ayanamsa: baseParams.ayanamsa || 'LAHIRI',
-      gender: baseParams.gender,
-      birthLocation: baseParams.birthLocation
-    };
+    const params = buildParamsFromLocalTime(localYear, localMonth, localDay, localHour, localMinute, tz, baseParams);
 
     try {
       const chart = await calculateChart(params);
@@ -107,12 +155,12 @@ export async function findMuhurtas(baseParams: CalculationParams, opts: MuhurtaR
       const transitSaturn = chart.transits?.['Saturn'];
       if (transitSaturn && transitSaturn.sign === moon.sign) { score -= 2; reasons.push('Saturn transit over Moon sign'); }
 
-      // Basic daylight preference: many muhurta prefer daytime; reward if local hour between 6-18
-      const localHour = slotDate.getHours();
-      if (localHour >= 6 && localHour <= 18) { score += 1; }
+      // Basic daylight preference: reward if local hour between 6-18
+      const localHr = getLocalHour(slotUtcMs, tz);
+      if (localHr >= 6 && localHr <= 18) { score += 1; }
 
       slots.push({
-        startISO: slotDate.toISOString(),
+        startISO: new Date(slotUtcMs).toISOString(),
         score,
         tithi,
         nakshatra: nak,

@@ -111,7 +111,7 @@ function calculatePlanetaryPositions(date: Date, ayanamsa: number, lat: number, 
   };
 
   // Calculate Ascendant (Lagna) - Using Local Sidereal Time and Latitude
-  const gst = SiderealTime(date); // Greenwish Sidereal Time
+const gst = SiderealTime(date); // Greenwich Sidereal Time
   const lst = (gst + lng / 15) % 24; 
   const ramc = lst * 15; 
 

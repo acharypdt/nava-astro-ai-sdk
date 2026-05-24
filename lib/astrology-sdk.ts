@@ -73,65 +73,71 @@ export class NavaAstroSDK {
   }
 
   /**
-   * AI-based Question Resolution using Cloudflare Workers AI + Managed AI Search
-   * Updated to leverage the April 16 Cloudflare "AI Search" Managed RAG Service.
+   * Query Cloudflare AI Search (REST API) for indexed knowledge context
    */
-  async resolveQuestionWithAI(question: string, data: AstroChartData, muhurtaDetails?: MuhurtaResult[]): Promise<string> {
-    
-    let searchContext = "";
+  private async queryAISearch(question: string): Promise<string> {
+    const accountId = this.config.env?.CLOUDFLARE_ACCOUNT_ID;
+    const apiToken = this.config.env?.CLOUDFLARE_API_TOKEN;
+
+    if (!accountId || !apiToken) {
+      console.warn("CLOUDFLARE_ACCOUNT_ID or CLOUDFLARE_API_TOKEN not set for AI Search REST.");
+      return "";
+    }
 
     try {
-       // Step 1: Query the Managed AI Search Service (via REST API to avoid Binding Errors)
-       const accountId = this.config.env?.CLOUDFLARE_ACCOUNT_ID;
-       const apiToken = this.config.env?.CLOUDFLARE_API_TOKEN;
-       
-       if (accountId && apiToken) {
-           try {
-               const indexName = "yagya-ashram";
-               const url = `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai-search/indexes/${indexName}/query`;
-               
-               const searchRes = await fetch(url, {
-                  method: 'POST',
-                  headers: {
-                    'Authorization': `Bearer ${apiToken}`,
-                    'Content-Type': 'application/json'
-                  },
-                  body: JSON.stringify({ text: question })
-               });
+      const indexName = "yagya-ashram";
+      const url = `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai-search/indexes/${indexName}/query`;
 
-               if (searchRes.ok) {
-                 const searchResults = await searchRes.json() as any;
-                 
-                 // Format the retrieved documents/snippets as context
-                 const docs = searchResults?.result || [];
-                 if (docs.length > 0) {
-                   searchContext = "\n\n[Cloudflare AI Search: Indexed Knowledge]\n";
-                   docs.slice(0, 3).forEach((res: any) => {
-                      searchContext += `- ${res.text || res.content || JSON.stringify(res)}\n`;
-                   });
-                   searchContext += "[/Cloudflare AI Search]\n";
-                 }
-               } else {
-                 console.warn("AI Search REST API Error:", await searchRes.text());
-               }
-           } catch (idxErr) {
-               console.warn("Could not query Cloudflare AI Search via REST:", idxErr);
-           }
-       } else {
-           console.warn("CLOUDFLARE_ACCOUNT_ID or CLOUDFLARE_API_TOKEN not set for AI Search REST.");
-       }
-    } catch (e) {
-       console.warn("AI Search setup issue:", e);
+      const searchRes = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ text: question })
+      });
+
+      if (!searchRes.ok) {
+        console.warn("AI Search REST API Error:", await searchRes.text());
+        return "";
+      }
+
+      const searchResults = await searchRes.json() as any;
+      const docs = searchResults?.result || [];
+
+      if (docs.length === 0) return "";
+
+      let context = "\n\n[Cloudflare AI Search: Indexed Knowledge]\n";
+      docs.slice(0, 3).forEach((res: any) => {
+        context += `- ${res.text || res.content || JSON.stringify(res)}\n`;
+      });
+      context += "[/Cloudflare AI Search]\n";
+
+      return context;
+    } catch (idxErr) {
+      console.warn("Could not query Cloudflare AI Search via REST:", idxErr);
+      return "";
     }
+  }
 
-    let muhurtaContext = "";
-    if (muhurtaDetails && muhurtaDetails.length > 0) {
-      muhurtaContext = "\n\n[मुहूर्त विवरण]\n" + muhurtaDetails.slice(0, 5).map((item, index) => {
-        return `${index + 1}. समय: ${item.startISO}, तिथि: ${item.tithi}, नक्षत्र: ${item.nakshatra} (${item.nakshatraName}), स्कोर: ${item.score}`;
-      }).join("\n") + "\n[/मुहूर्त विवरण]\n";
-    }
+  /**
+   * Format muhurta details into a prompt context block
+   */
+  private formatMuhurtaContext(muhurtaDetails?: MuhurtaResult[]): string {
+    if (!muhurtaDetails || muhurtaDetails.length === 0) return "";
 
-    const prompt = `तुम एक प्रकांड वैदिक ज्योतिषी हो। नीचे दी गई कुण्डली विश्लेषण रिपोर्ट और मुहूर्त विवरण को ध्यान से पढ़ें:
+    const lines = muhurtaDetails.slice(0, 5).map((item, index) => {
+      return `${index + 1}. समय: ${item.startISO}, तिथि: ${item.tithi}, नक्षत्र: ${item.nakshatra} (${item.nakshatraName}), स्कोर: ${item.score}`;
+    });
+
+    return "\n\n[मुहूर्त विवरण]\n" + lines.join("\n") + "\n[/मुहूर्त विवरण]\n";
+  }
+
+  /**
+   * Build the prompt for the AI model
+   */
+  private buildAIPrompt(question: string, data: AstroChartData, muhurtaContext: string, searchContext: string): string {
+    return `तुम एक प्रकांड वैदिक ज्योतिषी हो। नीचे दी गई कुण्डली विश्लेषण रिपोर्ट और मुहूर्त विवरण को ध्यान से पढ़ें:
 
 [कुण्डली डेटा]
 ${JSON.stringify(data.planets)}
@@ -142,32 +148,60 @@ ${JSON.stringify(data.houseLords)}
 
 उपरोक्त डेटा, मुहूर्त विवरण और AI Search ज्ञानकोश के आधार पर, इस प्रश्न का अत्यंत सटीक, प्रामाणिक और ज्योतिषीय उत्तर दें। 
 ध्यान दें: पूरा उत्तर केवल और केवल हिंदी (Hindi) भाषा में ही लिखें। अंग्रेजी या किसी अन्य भाषा का प्रयोग बिल्कुल न करें। उत्तर को सहायक और सकारात्मक (Empathetic & Positive) रखें।`;
+  }
+
+  /**
+   * Run inference on Cloudflare Workers AI
+   */
+  private async runAIInference(prompt: string): Promise<string | null> {
+    if (!this.config.env?.AI) return null;
 
     try {
-      if (this.config.env?.AI) {
-        try {
-          const response = await this.config.env.AI.run('@cf/meta/llama-3-8b-instruct', {
-            messages: [
-              { role: 'system', content: 'You are an expert Vedic Astrologer. CRITICAL RULE: You MUST write your ENTIRE response exclusively in the Hindi language (Devanagari script). NEVER use English words. Provide a very detailed, deep and comprehensive astrological analysis in Hindi.' },
-              { role: 'user', content: prompt }
-            ],
-            max_tokens: 2048
-          });
+      const response = await this.config.env.AI.run('@cf/meta/llama-3-8b-instruct', {
+        messages: [
+          { 
+            role: 'system', 
+            content: 'You are an expert Vedic Astrologer. CRITICAL RULE: You MUST write your ENTIRE response exclusively in the Hindi language (Devanagari script). NEVER use English words. Provide a very detailed, deep and comprehensive astrological analysis in Hindi.' 
+          },
+          { role: 'user', content: prompt }
+        ],
+        max_tokens: 2048
+      });
 
-          if (response && response.response) {
-              return response.response;
-          }
-        } catch (betaError) {
-          console.warn("Cloudflare Native AI encountered an error, falling back:", betaError);
-          return "क्षमा करें, AI मॉडल से उत्तर उत्पन्न करने में समस्या आई।";
-        }
+      if (response && response.response) {
+        return response.response;
       }
-
-      return "क्षमा करें, Cloudflare AI (Native) उत्तर उत्पन्न नहीं कर सका।";
-    } catch (error) {
-      console.error("Cloudflare AI Error:", error);
-      return "Cloudflare Native AI के कनेक्शन में समस्या आई (Beta)। कृपया बाद में प्रयास करें।";
+    } catch (betaError) {
+      console.warn("Cloudflare Native AI encountered an error:", betaError);
     }
+
+    return null;
+  }
+
+  /**
+   * AI-based Question Resolution using Cloudflare Workers AI + Managed AI Search
+   * Updated to leverage the April 16 Cloudflare "AI Search" Managed RAG Service.
+   */
+  async resolveQuestionWithAI(question: string, data: AstroChartData, muhurtaDetails?: MuhurtaResult[]): Promise<string> {
+    // Step 1: Query Managed AI Search for knowledge context
+    const searchContext = await this.queryAISearch(question);
+
+    // Step 2: Format muhurta details
+    const muhurtaContext = this.formatMuhurtaContext(muhurtaDetails);
+
+    // Step 3: Build the AI prompt
+    const prompt = this.buildAIPrompt(question, data, muhurtaContext, searchContext);
+
+    // Step 4: Run AI inference
+    const aiResponse = await this.runAIInference(prompt);
+    if (aiResponse) return aiResponse;
+
+    // Fallback messages if AI is unavailable
+    if (!this.config.env?.AI) {
+      return "क्षमा करें, Cloudflare AI (Native) उत्तर उत्पन्न नहीं कर सका।";
+    }
+
+    return "क्षमा करें, AI मॉडल से उत्तर उत्पन्न करने में समस्या आई।";
   }
 
   /**

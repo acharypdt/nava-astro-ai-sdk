@@ -1,7 +1,37 @@
+# Dependencies
 node_modules/
+.pnp
+.pnp.js
+
+# Build output
 .next/
+out/
+dist/
+build/
+
+# Coverage
 coverage/
+
+# OS files
 .DS_Store
+Thumbs.db
+
+# Logs
 *.log
+npm-debug.log*
+
+# Environment files
 .env*
 !.env.example
+
+# Proprietary / Enterprise code — NOT pushed to public repo
+proprietary/
+
+# Seed data (full rules/prompts — kept private)
+data/*.seed.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo

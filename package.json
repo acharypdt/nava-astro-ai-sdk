@@ -1,13 +1,30 @@
 {
-  "name": "ai-studio-applet",
+  "name": "nava-astro-ai-sdk",
   "version": "0.1.0",
-  "private": true,
+  "private": false,
+  "license": "AGPL-3.0",
+  "author": "Acharya Pandit Dheerendra Tripathi <navasanganakah@gmail.com>",
+  "description": "NavaAstro AI Platform — Open Source Vedic Astrology SDK & Dashboard",
+  "homepage": "https://github.com/nava-astro-ai-sdk/nava-astro-ai-sdk",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nava-astro-ai-sdk/nava-astro-ai-sdk.git"
+  },
+  "bugs": {
+    "url": "https://github.com/nava-astro-ai-sdk/nava-astro-ai-sdk/issues"
+  },
+  "workspaces": [
+    "packages/sdk"
+  ],
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:community": "set NEXT_PUBLIC_EDITION=community && next build",
+    "build:enterprise": "set NEXT_PUBLIC_EDITION=enterprise && next build",
     "start": "next start",
     "lint": "eslint .",
-    "clean": "next clean"
+    "clean": "next clean",
+    "publish:sdk": "cd packages/sdk && npm publish"
   },
   "dependencies": {
     "@cloudflare/workers-types": "^4.20260418.1",

@@ -5,7 +5,7 @@
 
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
@@ -23,6 +23,7 @@ import {
   FileJson
 } from 'lucide-react';
 import { NavaAstroSDK } from '@/lib/astrology-sdk';
+import { geocodeLocation, getCurrentPosition } from '@/lib/geocode';
 
 const ASTRO_GLOSSARY: Record<string, string> = {
   'योग': 'योग (Yoga): ग्रहों का विशेष संयोजन जो जीवन के विभिन्न पहलुओं पर अनुकूल या प्रतिकूल प्रभाव डाल सकता है।',
@@ -95,8 +96,11 @@ const GlossaryTooltip = ({ term, children }: { term: string, children: React.Rea
 
 export default function AstroDashboard() {
   const [loading, setLoading] = useState(false);
+  const [geocoding, setGeocoding] = useState(false);
   const [report, setReport] = useState<any>(null);
   const [muhurtaResults, setMuhurtaResults] = useState<any[]>([]);
+  const geocodeTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const lastGeocodeRef = useRef<string>('');
   const [formData, setFormData] = useState({
     name: "उदाहरण उपयोगकर्ता",
     gender: "Male",
@@ -106,8 +110,8 @@ export default function AstroDashboard() {
     day: 31,
     hour: 11,
     minute: 20,
-    lat: 23.91,
-    lng: 76.91,
+    lat: 28.6139,
+    lng: 77.209,
     timezone: 5.5,
     report_type: "General",
     question: "",
@@ -116,6 +120,59 @@ export default function AstroDashboard() {
     muhurtaRange: 24,
     muhurtaStep: 30
   });
+
+  // Auto-geocode when location changes (debounced)
+  useEffect(() => {
+    const location = formData.location?.trim();
+    if (!location || location.length < 2) return;
+    if (location === lastGeocodeRef.current) return;
+
+    if (geocodeTimerRef.current) {
+      clearTimeout(geocodeTimerRef.current);
+    }
+
+    geocodeTimerRef.current = setTimeout(async () => {
+      lastGeocodeRef.current = location;
+      setGeocoding(true);
+      try {
+        const result = await geocodeLocation(location);
+        if (result) {
+          setFormData(prev => ({
+            ...prev,
+            lat: parseFloat(result.lat.toFixed(4)),
+            lng: parseFloat(result.lng.toFixed(4))
+          }));
+        }
+      } catch (err) {
+        console.warn('Geocoding error:', err);
+      } finally {
+        setGeocoding(false);
+      }
+    }, 600); // 600ms debounce
+
+    return () => {
+      if (geocodeTimerRef.current) {
+        clearTimeout(geocodeTimerRef.current);
+      }
+    };
+  }, [formData.location]);
+
+  const handleUseMyLocation = async () => {
+    try {
+      setGeocoding(true);
+      const location = await getCurrentPosition();
+      if (location) {
+        setFormData(prev => ({
+          ...prev,
+          lat: parseFloat(location.lat.toFixed(4)),
+          lng: parseFloat(location.lng.toFixed(4)),
+          location: location.displayName
+        }));
+      }
+    } finally {
+      setGeocoding(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -346,26 +403,44 @@ export default function AstroDashboard() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <label className="text-[10px] uppercase tracking-wider opacity-50 block">अक्षांश (Latitude)</label>
-                  <input type="number" step="0.0001"
-                    value={formData.lat}
-                    onChange={e => setFormData({...formData, lat: parseFloat(e.target.value)})}
-                    className="w-full bg-black/40 border border-white/10 rounded-lg py-3 px-4" 
-                    suppressHydrationWarning
-                  />
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-[10px] uppercase tracking-wider opacity-50 block">अक्षांश (Latitude)</label>
+                    <div className="relative">
+                      <input type="number" step="0.0001"
+                        value={formData.lat}
+                        onChange={e => setFormData({...formData, lat: parseFloat(e.target.value)})}
+                        className="w-full bg-black/40 border border-white/10 rounded-lg py-3 px-4 pr-10" 
+                        suppressHydrationWarning
+                      />
+                      {geocoding && (
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                          <Loader2 className="w-4 h-4 animate-spin text-[#F27D26]" />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] uppercase tracking-wider opacity-50 block">देशांतर (Longitude)</label>
+                    <div className="relative">
+                      <input type="number" step="0.0001"
+                        value={formData.lng}
+                        onChange={e => setFormData({...formData, lng: parseFloat(e.target.value)})}
+                        className="w-full bg-black/40 border border-white/10 rounded-lg py-3 px-4 pr-10" 
+                        suppressHydrationWarning
+                      />
+                    </div>
+                  </div>
                 </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] uppercase tracking-wider opacity-50 block">देशांतर (Longitude)</label>
-                  <input type="number" step="0.0001"
-                    value={formData.lng}
-                    onChange={e => setFormData({...formData, lng: parseFloat(e.target.value)})}
-                    className="w-full bg-black/40 border border-white/10 rounded-lg py-3 px-4" 
-                    suppressHydrationWarning
-                  />
-                </div>
-              </div>
+                <button
+                  type="button"
+                  onClick={handleUseMyLocation}
+                  disabled={geocoding}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-xs font-mono uppercase tracking-wider hover:bg-white/10 transition-all disabled:opacity-50"
+                >
+                  <MapIcon className="w-3.5 h-3.5 text-[#F27D26]" />
+                  {geocoding ? 'लोकेशन प्राप्त कर रहे हैं...' : 'मेरी वर्तमान लोकेशन का उपयोग करें'}
+                </button>
 
               <div className="space-y-1">
                 <label className="text-[10px] uppercase tracking-wider opacity-50 block">टाइमज़ोन और ऑफसेट (Timezone Offset, e.g. +5.5)</label>

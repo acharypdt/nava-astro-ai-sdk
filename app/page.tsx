@@ -56,6 +56,27 @@ function processGlossaryTerms(text: string): string {
   return processed;
 }
 
+function isMuhurtaQuery(question: string) {
+  if (!question || question.trim().length === 0) return false;
+  const text = question.toLowerCase();
+  const keywords = [
+    'मुहूर्त', 'muhurta', 'शुभ समय', 'शुभ तारीख', 'उपयुक्त समय', 'auspicious',
+    'कब', 'तारीख', 'दिन', 'समय', 'घड़ी', 'घंटा', 'समय बताओ', 'date', 'best time'
+  ];
+
+  const muhurtaWords = [
+    'मुहूर्त', 'muhurta', 'शुभ समय', 'शुभ तारीख', 'उपयुक्त समय'
+  ];
+
+  const hasMuhurtaWord = muhurtaWords.some(word => text.includes(word));
+  if (hasMuhurtaWord) return true;
+
+  const dateIntent = /(कब|तारीख|दिन|समय|घंटा|घड़ी|date|time)/i;
+  const isAuspiciousIntent = /(शुभ|उपयुक्त|best|auspicious)/i;
+
+  return dateIntent.test(text) && isAuspiciousIntent.test(text);
+}
+
 const GlossaryTooltip = ({ term, children }: { term: string, children: React.ReactNode }) => {
   const explanation = ASTRO_GLOSSARY[term] || 'Astrology term';
   
@@ -119,7 +140,11 @@ export default function AstroDashboard() {
       });
 
       let muhurtaInfo: any[] = [];
-      if (formData.findMuhurtas) {
+      const shouldSearchMuhurtas = formData.findMuhurtas || isMuhurtaQuery(formData.question);
+      if (shouldSearchMuhurtas) {
+        if (!formData.findMuhurtas) {
+          setFormData(prev => ({ ...prev, findMuhurtas: true }));
+        }
         muhurtaInfo = await sdk.findMuhurtas({
           year: formData.year,
           month: formData.month,

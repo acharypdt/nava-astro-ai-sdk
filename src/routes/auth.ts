@@ -25,8 +25,8 @@ export async function handleRegister(request: Request, env: any): Promise<Respon
   const passwordHash = await hashPassword(body.password);
 
   await env.DB?.prepare(
-    'INSERT INTO users (id, email, password_hash) VALUES (?, ?, ?)'
-  ).bind(id, body.email, passwordHash).run();
+    'INSERT INTO users (id, email, password_hash, name) VALUES (?, ?, ?, ?)'
+  ).bind(id, body.email, passwordHash, body.name || '').run();
 
   const secret = await env.PLATFORM_SECRETS?.get('JWT_SECRET') || 'default-secret';
   const token = await createToken({ sub: id, email: body.email, tier: 'community' }, secret);

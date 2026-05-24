@@ -646,6 +646,7 @@ export function calculateShadbala(planets: Record<string, { sign: number; house:
 export function calculateAshtakavarga(planets: Record<string, { sign: number; longitude: number }>, lagnaSign: number): {
   binnashtakavarga: Record<string, number[]>;
   sarvashtakavarga: number[];
+  totalBindu: number;
   signStrengths: { sign: number; name: string; bindus: number; interpretation: string }[];
 } {
   const hindiSigns = ["", "मेष", "वृषभ", "मिथुन", "कर्क", "सिंह", "कन्या", "तुला", "वृश्चिक", "धनु", "मकर", "कुंभ", "मीन"];

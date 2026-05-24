@@ -305,7 +305,9 @@ function getSaturnSignAtDate(date: Date): number {
 export function calculateSadeSati(moonSign: number): {
   isActive: boolean;
   moonSign: number;
+  moonSignName: string;
   saturnSign: number;
+  saturnSignName: string;
   phases: { phase: string; name: string; startDate: string; endDate: string; houseFromMoon: number; intensity: number; description: string }[];
   currentPhase: { phase: string; name: string; startDate: string; endDate: string; houseFromMoon: number; intensity: number; description: string } | null;
   predictions: string[];

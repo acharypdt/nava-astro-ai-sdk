@@ -1,11 +1,25 @@
-# @nava-astro/sdk
+# @acharypdt/nava-astro-sdk
 
 **NavaAstro AI SDK** — Open Source Vedic Astrology engine for accurate Kundali calculations, Yogas, Doshas, Dasha, Muhurta, and AI-powered analysis.
 
 ## Installation
 
+### From GitHub Packages
+
+Create `.npmrc` in your project root:
+```
+@acharypdt:registry=https://npm.pkg.github.com/
+//npm.pkg.github.com/:_authToken=YOUR_GITHUB_TOKEN
+```
+
+Then install:
 ```bash
-npm install @nava-astro/sdk
+npm install @acharypdt/nava-astro-sdk
+```
+
+### From npm (when published)
+```bash
+npm install nava-astro-sdk
 ```
 
 ## Quick Start

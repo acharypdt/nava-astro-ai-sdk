@@ -1,14 +1,17 @@
 {
-  "name": "@nava-astro/sdk",
+  "name": "@acharypdt/nava-astro-sdk",
   "version": "1.0.0-alpha.1",
   "license": "AGPL-3.0",
   "private": false,
   "author": "Acharya Pandit Dheerendra Tripathi <navasanganakah@gmail.com>",
   "description": "NavaAstro AI SDK — Open Source Vedic Astrology engine for accurate Kundali calculations, Yogas, Doshas, Dasha, Muhurta, and AI-powered analysis",
-  "homepage": "https://github.com/nava-astro-ai-sdk/nava-astro-ai-sdk",
+  "homepage": "https://github.com/acharypdt/nava-astro-ai-sdk",
   "repository": {
     "type": "git",
-    "url": "https://github.com/nava-astro-ai-sdk/nava-astro-ai-sdk.git"
+    "url": "https://github.com/acharypdt/nava-astro-ai-sdk.git"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/"
   },
   "keywords": ["vedic-astrology", "jyotish", "kundali", "astrology-sdk", "hindu-astrology", "nava-astro", "muhurta", "panchang"],
   "main": "./dist/index.js",
@@ -40,8 +43,5 @@
     "tsup": "^8.4.0",
     "typescript": "^5.7.0",
     "@types/node": "^20.0.0"
-  },
-  "publishConfig": {
-    "access": "public"
   }
 }

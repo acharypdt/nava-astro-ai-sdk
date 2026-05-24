@@ -5,7 +5,7 @@
  * It can be used both within the worker and exported for other environments.
  */
 
-import { calculateChart, CalculationParams } from './astro-core';
+import { calculateChart, calculateSadeSati, calculateExtraDivisionalCharts, calculateVarshaphal, CalculationParams } from './astro-core';
 import { evaluateRule, AstroChartData, RuleAST } from './evaluator';
 import { findMuhurtas, MuhurtaRequest, MuhurtaResult } from './muhurat';
 
@@ -740,6 +740,117 @@ ${JSON.stringify(data.houseLords)}
    */
   validateRule(rule: RuleAST, data: AstroChartData): boolean {
     return evaluateRule(rule, data);
+  }
+
+  /**
+   * Sade Sati Analysis: Saturn transit over Moon
+   */
+  async analyzeSadeSati(params: CalculationParams): Promise<any> {
+    const chartData = await calculateChart(params);
+    const moonSign = chartData.planets['Moon']?.sign || 1;
+    const sadeSati = calculateSadeSati(moonSign);
+
+    const pName = sadeSati.isActive ? 'साढ़ेसाती सक्रिय है' : 'साढ़ेसाती सक्रिय नहीं है';
+    let report = `## 🌑 साढ़ेसाती विश्लेषण (Sade Sati Analysis)\n\n`;
+    report += `- **जन्म का चंद्रमा:** ${sadeSati.moonSignName} राशि\n`;
+    report += `- **वर्तमान शनि:** ${sadeSati.saturnSignName} राशि में\n`;
+    report += `- **स्थिति:** ${sadeSati.isActive ? '⚠️ साढ़ेसाती चल रही है' : '✅ साढ़ेसाती नहीं है'}\n\n`;
+
+    if (sadeSati.currentPhase) {
+      report += `### वर्तमान चरण: ${sadeSati.currentPhase.name}\n`;
+      report += `- **अवधि:** ${sadeSati.currentPhase.startDate} से ${sadeSati.currentPhase.endDate}\n`;
+      report += `- **तीव्रता:** ${'🌑'.repeat(Math.floor(sadeSati.currentPhase.intensity / 2))}\n`;
+      report += `- **विवरण:** ${sadeSati.currentPhase.description}\n\n`;
+    }
+
+    report += `### सभी चरण\n\n`;
+    const phaseNames: Record<string, string> = {
+      first_dhaiya: 'पहला ढैय्या', middle_dhaiya: 'बीच का ढैय्या', last_dhaiya: 'अंतिम ढैय्या'
+    };
+    for (const phase of sadeSati.phases) {
+      report += `**${phaseNames[phase.phase as string] || phase.phase}** (${phase.startDate} - ${phase.endDate})\n`;
+      report += `> तीव्रता: ${phase.intensity}/10, शनि चंद्रमा से ${phase.houseFromMoon}वें भाव में\n\n`;
+    }
+
+    if (sadeSati.predictions.length > 0) {
+      report += `### 🔮 भविष्यवाणियाँ\n`;
+      for (const pred of sadeSati.predictions) {
+        report += `- ${pred}\n`;
+      }
+    }
+
+    return { sadeSati, report };
+  }
+
+  /**
+   * Extra Divisional Charts: D3, D7, D10
+   */
+  async analyzeDivisionalCharts(params: CalculationParams): Promise<any> {
+    const chartData = await calculateChart(params);
+    const planets = { ...chartData.planets };
+    const lagnaSidereal = planets['Ascendant']?.longitude || 0;
+    const charts = calculateExtraDivisionalCharts(planets, lagnaSidereal);
+
+    const hindiSigns = ["", "मेष", "वृषभ", "मिथुन", "कर्क", "सिंह", "कन्या", "तुला", "वृश्चिक", "धनु", "मकर", "कुंभ", "मीन"];
+    const hindiPlanets: Record<string, string> = {
+      'Sun': 'सूर्य', 'Moon': 'चंद्रमा', 'Mars': 'मंगल', 'Mercury': 'बुध',
+      'Jupiter': 'गुरु', 'Venus': 'शुक्र', 'Saturn': 'शनि', 'Rahu': 'राहु', 'Ketu': 'केतु'
+    };
+
+    let report = `## 📐 वर्गीय कुण्डलियाँ (Divisional Charts)\n\n`;
+
+    const chartNames: Record<string, string> = {
+      'D3': 'D3 - द्रेष्काण कुण्डली (सहोदर, साहस)',
+      'D7': 'D7 - सप्तमांश कुण्डली (संतान, रचनात्मकता)',
+      'D10': 'D10 - दशमांश कुण्डली (करियर, कर्म)'
+    };
+
+    for (const [chartName, chartData] of Object.entries(charts)) {
+      report += `### ${chartNames[chartName] || chartName}\n`;
+      report += `**लग्न:** ${hindiSigns[chartData.lagnaSign]} राशि\n\n`;
+
+      for (const [pName, p] of Object.entries(chartData.planets as Record<string, any>)) {
+        if (pName === 'Ascendant') continue;
+        report += `- **${hindiPlanets[pName] || pName}:** ${hindiSigns[p.sign]} राशि, ${p.house}वें भाव में\n`;
+      }
+      report += `\n`;
+    }
+
+    return { charts, report };
+  }
+
+  /**
+   * Varshaphal: Annual Horoscope based on Solar Return
+   */
+  async analyzeVarshaphal(params: CalculationParams, targetYear?: number): Promise<any> {
+    const chartData = await calculateChart(params);
+    const planets = chartData.planets;
+    const lagnaSign = planets['Ascendant']?.sign || 1;
+    const birthSunLongitude = planets['Sun']?.longitude || 0;
+
+    const birthDate = new Date(Date.UTC(params.year, params.month - 1, params.day, params.hour, params.minute));
+    const year = targetYear || new Date().getFullYear();
+
+    const result = calculateVarshaphal(birthDate, birthSunLongitude, lagnaSign, year);
+
+    const hindiSigns = ["", "मेष", "वृषभ", "मिथुन", "कर्क", "सिंह", "कन्या", "तुला", "वृश्चिक", "धनु", "मकर", "कुंभ", "मीन"];
+    let report = `## 🎂 वार्षिक वर्षफल (Annual Horoscope)\n\n`;
+    report += `- **वर्ष:** ${result.year}\n`;
+    report += `- **आयु:** ${result.age} वर्ष\n`;
+    report += `- **सौर वापसी:** ${result.solarReturnDate}\n`;
+    report += `- **मुंथा (वार्षिक लग्न):** ${hindiSigns[result.munthaSign]} राशि\n\n`;
+
+    report += `### वार्षिक भविष्यवाणी\n`;
+    for (const pred of result.predictions) {
+      report += `- ${pred}\n`;
+    }
+
+    report += `\n### मासिक भविष्यवाणी\n\n`;
+    for (const mp of result.monthlyPredictions) {
+      report += `**${mp.month}वाँ महीना:** ${mp.prediction}\n\n`;
+    }
+
+    return { varshaphal: result, report };
   }
 }
 

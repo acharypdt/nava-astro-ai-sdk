@@ -6,6 +6,11 @@ import { trackUsage } from './middleware/usage-tracker';
 import { handleRegister, handleLogin, handleCreateApiKey, handleListApiKeys } from './routes/auth';
 import { handleCalculate, handleListKundalis, handleGetKundali } from './routes/kundali';
 import { handleFindMuhurta } from './routes/muhurta';
+import { handleSadeSati } from './routes/sadesati';
+import { handleDivisionalCharts } from './routes/divisional';
+import { handleAshtakavarga } from './routes/ashtakavarga';
+import { handleShadbala } from './routes/shadbala';
+import { handleVarshaphal } from './routes/varshaphal';
 import { handleGetProfile, handleUpdateProfile, handleGetUsage, handleGetHistory } from './routes/user';
 import { handleAskAI } from './routes/ai';
 import { handleHealthCheck } from './routes/health';
@@ -50,6 +55,13 @@ const routes: Route[] = [
 
   // Muhurta
   { method: 'POST', path: '/api/v1/muhurta', handler: handleFindMuhurta, requireAuth: false },
+
+  // Sade Sati
+  { method: 'POST', path: '/api/v1/kundali/sade-sati', handler: handleSadeSati, requireAuth: true },
+  { method: 'POST', path: '/api/v1/kundali/divisional-charts', handler: handleDivisionalCharts, requireAuth: true },
+  { method: 'POST', path: '/api/v1/kundali/ashtakavarga', handler: handleAshtakavarga, requireAuth: true },
+  { method: 'POST', path: '/api/v1/kundali/shadbala', handler: handleShadbala, requireAuth: true },
+  { method: 'POST', path: '/api/v1/kundali/varshaphal', handler: handleVarshaphal, requireAuth: true },
 
   // AI
   { method: 'POST', path: '/api/v1/ai/ask', handler: handleAskAI, requireAuth: false },

@@ -2,7 +2,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Sparkles, User, MapIcon, Globe, Heart, Activity, FileJson, Key, CreditCard, HeartHandshake } from 'lucide-react';
+import { Sparkles, User, MapIcon, Globe, Heart, Activity, FileJson, Key, CreditCard, HeartHandshake, Moon, LayoutGrid, Layers, Zap, CalendarDays } from 'lucide-react';
 
 const communityNav = [
   { href: '/', label: 'होम', icon: Sparkles },
@@ -12,6 +12,11 @@ const communityNav = [
 
 const enterpriseNav = [
   { href: '/muhurta', label: 'मुहूर्त', icon: Globe },
+  { href: '/sade-sati', label: 'साढ़ेसाती', icon: Moon },
+  { href: '/divisional-charts', label: 'वर्गीय कुण्डलियाँ', icon: LayoutGrid },
+  { href: '/ashtakavarga', label: 'अष्टकवर्ग', icon: Layers },
+  { href: '/shadbala', label: 'षड्बल', icon: Zap },
+  { href: '/varshaphal', label: 'वर्षफल', icon: CalendarDays },
   { href: '/transits', label: 'गोचर', icon: Activity },
   { href: '/reports', label: 'रिपोर्ट', icon: FileJson },
   { href: '/api-keys', label: 'API Keys', icon: Key },

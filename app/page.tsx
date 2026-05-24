@@ -115,10 +115,7 @@ export default function AstroDashboard() {
     timezone: 5.5,
     report_type: "General",
     question: "",
-    useAI: true,
-    findMuhurtas: false,
-    muhurtaRange: 24,
-    muhurtaStep: 30
+    useAI: true
   });
 
   // Auto-geocode when location changes (debounced)
@@ -197,11 +194,7 @@ export default function AstroDashboard() {
       });
 
       let muhurtaInfo: any[] = [];
-      const shouldSearchMuhurtas = formData.findMuhurtas || isMuhurtaQuery(formData.question);
-      if (shouldSearchMuhurtas) {
-        if (!formData.findMuhurtas) {
-          setFormData(prev => ({ ...prev, findMuhurtas: true }));
-        }
+      if (isMuhurtaQuery(formData.question)) {
         muhurtaInfo = await sdk.findMuhurtas({
           year: formData.year,
           month: formData.month,
@@ -216,8 +209,8 @@ export default function AstroDashboard() {
           birthLocation: formData.location,
           report_type: formData.report_type
         }, {
-          rangeHours: formData.muhurtaRange,
-          stepMinutes: formData.muhurtaStep,
+          rangeHours: 24,
+          stepMinutes: 30,
           top: 5
         });
       }
@@ -478,39 +471,6 @@ export default function AstroDashboard() {
                   suppressHydrationWarning
                 />
               </div>
-
-              <div className="flex items-center gap-3 bg-white/5 p-3 rounded-lg border border-white/5 cursor-pointer select-none"
-                   onClick={() => setFormData({...formData, findMuhurtas: !formData.findMuhurtas})}>
-                <div className={`w-10 h-5 rounded-full transition-colors relative ${formData.findMuhurtas ? 'bg-[#F27D26]' : 'bg-gray-600'}`}>
-                  <motion.div 
-                    animate={{ x: formData.findMuhurtas ? 22 : 2 }}
-                    className="absolute top-1 w-3 h-3 bg-white rounded-full"
-                  />
-                </div>
-                <span className="text-xs font-mono uppercase tracking-wider">मुहूर्त खोजें</span>
-                <Sparkles className={`w-4 h-4 ${formData.findMuhurtas ? 'text-[#F27D26]' : 'text-gray-600'}`} />
-              </div>
-
-              {formData.findMuhurtas && (
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <label className="text-[10px] uppercase tracking-wider opacity-50 block">स्कैन अवधि (घंटे)</label>
-                    <input type="number" step="1"
-                      value={formData.muhurtaRange}
-                      onChange={e => setFormData({...formData, muhurtaRange: parseInt(e.target.value) || 24})}
-                      className="w-full bg-black/40 border border-white/10 rounded-lg py-3 px-4"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] uppercase tracking-wider opacity-50 block">स्टेप (मिनट)</label>
-                    <input type="number" step="5"
-                      value={formData.muhurtaStep}
-                      onChange={e => setFormData({...formData, muhurtaStep: parseInt(e.target.value) || 30})}
-                      className="w-full bg-black/40 border border-white/10 rounded-lg py-3 px-4"
-                    />
-                  </div>
-                </div>
-              )}
 
               <div className="flex items-center gap-3 bg-white/5 p-3 rounded-lg border border-white/5 cursor-pointer select-none"
                    onClick={() => setFormData({...formData, useAI: !formData.useAI})}>

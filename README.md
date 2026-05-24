@@ -1,5 +1,9 @@
 # ?? NavaAstro AI Platform
 
+[![npm version](https://img.shields.io/npm/v/nava-astro-sdk?label=npm&color=blue)](https://www.npmjs.com/package/nava-astro-sdk)
+[![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue.svg)](https://opensource.org/licenses/AGPL-3.0)
+[![GitHub](https://img.shields.io/github/stars/acharypdt/nava-astro-ai-sdk?style=social)](https://github.com/acharypdt/nava-astro-ai-sdk)
+
 **??-???????: Enterprise-Grade Vedic Astrology AI SDK & Platform**
 
 An indigenous, autonomous AI-powered Vedic Astrology platform built on modern cloud infrastructure (Cloudflare Workers, D1, R2) with 100% dynamic rule evaluation and AI-driven chart interpretation.
@@ -56,8 +60,8 @@ An indigenous, autonomous AI-powered Vedic Astrology platform built on modern cl
 
 1. **Clone and install dependencies:**
    ```bash
-   git clone https://github.com/acharypdt/ai-astrology-sdk.git
-   cd ai-astrology-sdk
+   git clone https://github.com/acharypdt/nava-astro-ai-sdk.git
+   cd nava-astro-ai-sdk
    npm install
    ```
 
@@ -91,25 +95,25 @@ An indigenous, autonomous AI-powered Vedic Astrology platform built on modern cl
 ```
 navaastro/
 +-- app/                      # Next.js App Router
-¦   +-- page.tsx              # Main dashboard UI
-¦   +-- layout.tsx            # Root layout with metadata
-¦   +-- api/                  # API routes (astrology endpoints)
-¦   +-- applet/               # Reusable UI components
-¦
+ï¿½   +-- page.tsx              # Main dashboard UI
+ï¿½   +-- layout.tsx            # Root layout with metadata
+ï¿½   +-- api/                  # API routes (astrology endpoints)
+ï¿½   +-- applet/               # Reusable UI components
+ï¿½
 +-- lib/                      # Core SDK & Logic
-¦   +-- astrology-sdk.ts      # Main SDK class (analyze, resolveQuestion)
-¦   +-- astro-core.ts         # Astronomical calculations
-¦   +-- evaluator.ts          # Rule evaluation engine
-¦   +-- utils.ts              # Utility functions
-¦
+ï¿½   +-- astrology-sdk.ts      # Main SDK class (analyze, resolveQuestion)
+ï¿½   +-- astro-core.ts         # Astronomical calculations
+ï¿½   +-- evaluator.ts          # Rule evaluation engine
+ï¿½   +-- utils.ts              # Utility functions
+ï¿½
 +-- hooks/                    # React custom hooks
 +-- migrations/               # Database migrations (D1)
-¦
+ï¿½
 +-- next.config.ts            # Next.js configuration
 +-- tsconfig.json             # TypeScript configuration
 +-- tailwind.config.js        # Tailwind CSS setup
 +-- wrangler.jsonc            # Cloudflare Workers config
-¦
+ï¿½
 +-- README.md                 # This file
 ```
 
@@ -150,7 +154,7 @@ navaastro/
 ### Basic Chart Analysis
 
 ```typescript
-import { NavaAstroSDK } from '@/lib/astrology-sdk';
+import { NavaAstroSDK } from 'nava-astro-sdk';
 
 const sdk = new NavaAstroSDK({
   apiKey: process.env.GEMINI_API_KEY,
@@ -227,7 +231,7 @@ This project now supports offline muhurta (auspicious time) recommendations dire
 ### SDK Usage
 
 ```ts
-import { NavaAstroSDK } from '@/lib/astrology-sdk';
+import { NavaAstroSDK } from 'nava-astro-sdk';
 
 const sdk = new NavaAstroSDK();
 const results = await sdk.findMuhurtas({
@@ -343,7 +347,7 @@ The platform uses authentic Vedic astrology terminology:
 
 - **?????? (Kundli):** Birth chart showing planetary positions
 - **???? (Ascendant):** Rising sign at birth time
-- **???? (Rasi):** Zodiac sign (30° segments)
+- **???? (Rasi):** Zodiac sign (30ï¿½ segments)
 - **??? (Bhava):** House system (12 divisions of life)
 - **??????? (Nakshatra):** 27 lunar mansions
 - **??? (Yoga):** Auspicious planetary combinations
@@ -355,7 +359,7 @@ The platform uses authentic Vedic astrology terminology:
 
 ## ?? License
 
-This project is proprietary software developed by Acharya Pandit Dheerendra Tripathi in collaboration with NavaSanganakah Multiventures and Yagya Ashram.
+AGPL-3.0 Â© NavaAstro. See [LICENSE](./LICENSE) for details.
 
 ---
 

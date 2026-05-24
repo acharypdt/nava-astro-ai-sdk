@@ -1,23 +1,9 @@
-# @acharypdt/nava-astro-sdk
+# nava-astro-sdk
 
 **NavaAstro AI SDK** — Open Source Vedic Astrology engine for accurate Kundali calculations, Yogas, Doshas, Dasha, Muhurta, and AI-powered analysis.
 
 ## Installation
 
-### From GitHub Packages
-
-Create `.npmrc` in your project root:
-```
-@acharypdt:registry=https://npm.pkg.github.com/
-//npm.pkg.github.com/:_authToken=YOUR_GITHUB_TOKEN
-```
-
-Then install:
-```bash
-npm install @acharypdt/nava-astro-sdk
-```
-
-### From npm (when published)
 ```bash
 npm install nava-astro-sdk
 ```
@@ -27,7 +13,7 @@ npm install nava-astro-sdk
 ### Local Calculation (No API Key Required)
 
 ```typescript
-import { NavaAstroSDK } from '@nava-astro/sdk';
+import { NavaAstroSDK } from 'nava-astro-sdk';
 
 const sdk = new NavaAstroSDK();
 const result = await sdk.analyze({
@@ -46,7 +32,7 @@ console.log(result.aiReport);         // Heuristic analysis report
 ### Cloud API (With API Key)
 
 ```typescript
-import { NavaAstroClient } from '@nava-astro/sdk';
+import { NavaAstroClient } from 'nava-astro-sdk';
 
 const client = new NavaAstroClient({
   apiKey: 'YOUR_API_KEY',
@@ -65,7 +51,7 @@ const result = await client.analyze({
 ### Validate an Astrological Rule
 
 ```typescript
-import { evaluateRule } from '@nava-astro/sdk';
+import { evaluateRule } from 'nava-astro-sdk';
 
 const isManglik = evaluateRule({
   operator: 'IN_HOUSE',

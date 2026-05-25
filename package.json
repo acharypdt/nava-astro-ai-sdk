@@ -14,16 +14,20 @@
     "url": "https://github.com/nava-astro-ai-sdk/nava-astro-ai-sdk/issues"
   },
   "workspaces": [
+    "packages/core",
     "packages/sdk"
   ],
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:core": "npm run build -w packages/core",
+    "build:sdk": "npm run build -w packages/sdk",
     "build:community": "set NEXT_PUBLIC_EDITION=community && next build",
     "build:enterprise": "set NEXT_PUBLIC_EDITION=enterprise && next build",
     "start": "next start",
     "lint": "eslint .",
     "clean": "next clean",
+    "publish:core": "npm publish -w packages/core",
     "publish:sdk": "cd packages/sdk && npm publish"
   },
   "dependencies": {

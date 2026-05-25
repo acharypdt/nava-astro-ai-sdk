@@ -1,0 +1,70 @@
+{
+  "name": "@nava-astro/core",
+  "version": "1.0.0-beta.1",
+  "license": "AGPL-3.0",
+  "private": false,
+  "author": "Acharya Pandit Dheerendra Tripathi <navasanganakah@gmail.com>",
+  "description": "NavaAstro Core — Pure Vedic Astrology engine for accurate Kundali calculations, Yogas, Doshas, Dasha, Muhurta, and AI-powered analysis",
+  "homepage": "https://github.com/nava-astro/core",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nava-astro/core.git"
+  },
+  "keywords": ["vedic-astrology", "jyotish", "kundali", "astrology-sdk", "hindu-astrology", "nava-astro", "muhurta", "panchang"],
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./evaluator": {
+      "types": "./dist/evaluator.d.ts",
+      "import": "./dist/evaluator.js",
+      "require": "./dist/evaluator.cjs"
+    },
+    "./muhurat": {
+      "types": "./dist/muhurat.d.ts",
+      "import": "./dist/muhurat.js",
+      "require": "./dist/muhurat.cjs"
+    },
+    "./client": {
+      "types": "./dist/client.d.ts",
+      "import": "./dist/client.js",
+      "require": "./dist/client.cjs"
+    },
+    "./errors": {
+      "types": "./dist/errors.d.ts",
+      "import": "./dist/errors.js",
+      "require": "./dist/errors.cjs"
+    },
+    "./geocode": {
+      "types": "./dist/geocode.d.ts",
+      "import": "./dist/geocode.js",
+      "require": "./dist/geocode.cjs"
+    }
+  },
+  "files": [
+    "dist/",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts src/evaluator.ts src/muhurat.ts src/client.ts src/errors.ts src/geocode.ts --format esm,cjs --dts --clean --out-dir dist",
+    "dev": "tsup src/index.ts --format esm,cjs --dts --watch",
+    "prepublishOnly": "npm run build",
+    "test": "node --test dist/*.test.js"
+  },
+  "dependencies": {
+    "astronomy-engine": "^2.1.19",
+    "jose": "^6.2.2"
+  },
+  "devDependencies": {
+    "tsup": "^8.4.0",
+    "typescript": "^5.7.0",
+    "@types/node": "^20.0.0"
+  }
+}

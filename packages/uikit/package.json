@@ -1,0 +1,47 @@
+{
+  "name": "@nava-astro/uikit",
+  "version": "1.0.0-beta.1",
+  "license": "AGPL-3.0",
+  "private": false,
+  "author": "Acharya Pandit Dheerendra Tripathi <navasanganakah@gmail.com>",
+  "description": "NavaAstro UI Kit — React components for Vedic Astrology dashboards",
+  "homepage": "https://github.com/nava-astro/uikit",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nava-astro/uikit.git"
+  },
+  "keywords": ["vedic-astrology", "react", "kundali", "jyotish", "nava-astro", "uikit"],
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": ["dist/", "README.md"],
+  "scripts": {
+    "build": "tsup src/index.ts --format esm,cjs --dts --clean --out-dir dist --external react --external react-dom --external @nava-astro/core --inject-style",
+    "dev": "tsup src/index.ts --format esm,cjs --dts --watch --external react --external react-dom --external @nava-astro/core --inject-style",
+    "prepublishOnly": "npm run build"
+  },
+  "peerDependencies": {
+    "@nava-astro/core": "^1.0.0-beta.1",
+    "react": "^18.0.0 || ^19.0.0",
+    "react-dom": "^18.0.0 || ^19.0.0"
+  },
+  "peerDependenciesMeta": {
+    "react-dom": { "optional": true }
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "tsup": "^8.4.0",
+    "typescript": "^5.7.0"
+  }
+}

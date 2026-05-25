@@ -15,7 +15,8 @@
   },
   "workspaces": [
     "packages/core",
-    "packages/sdk"
+    "packages/sdk",
+    "packages/uikit"
   ],
   "scripts": {
     "dev": "next dev",

@@ -169,10 +169,6 @@ export function calculateAyanamsaDeg(jd: number): number {
   return (22.463 + 0.01023 * (T + 1)) * 3600 / 3600;
 }
 
-function posMod(n: number, m: number = 12): number {
-  return ((n % m) + m) % m;
-}
-
 function getSaturnSignAtDate(date: Date): number {
   const jd = 367 * date.getUTCFullYear() - Math.floor(7 * (date.getUTCFullYear() + Math.floor((date.getUTCMonth() + 10) / 12)) / 4) + Math.floor(275 * (date.getUTCMonth() + 1) / 9) + date.getUTCDate() + 1721013.5 + ((date.getUTCHours() + date.getUTCMinutes() / 60) / 24);
   const ayanamsaDeg = calculateAyanamsaDeg(jd);

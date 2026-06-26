@@ -831,7 +831,7 @@ ${JSON.stringify(data.houseLords)}
     const birthDate = new Date(Date.UTC(params.year, params.month - 1, params.day, params.hour, params.minute));
     const year = targetYear || new Date().getFullYear();
 
-    const result = calculateVarshaphal(birthDate, birthSunLongitude, lagnaSign, year);
+    const result = calculateVarshaphal(birthDate, birthSunLongitude, lagnaSign, year, params.lat, params.lng);
 
     const hindiSigns = ["", "मेष", "वृषभ", "मिथुन", "कर्क", "सिंह", "कन्या", "तुला", "वृश्चिक", "धनु", "मकर", "कुंभ", "मीन"];
     let report = `## 🎂 वार्षिक वर्षफल (Annual Horoscope)\n\n`;
